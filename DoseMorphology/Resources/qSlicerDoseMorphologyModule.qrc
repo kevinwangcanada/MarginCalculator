@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>Icons/DoseMorphology.png</file>
+    <file>Icons/expand.png</file>
+    <file>Icons/shrink.png</file>
+  </qresource>
+</RCC>
