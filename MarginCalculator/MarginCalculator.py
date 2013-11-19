@@ -17,7 +17,7 @@ class MarginCalculator:
     Use this module to convolve a dose distribution volume. 
 """).substitute({ 'a':parent.slicerWikiUrl, 'b':slicer.app.majorVersion, 'c':slicer.app.minorVersion })
     parent.acknowledgementText = """
-    Supported by SparKit and the Slicer Community. See http://www.slicerrt.org for details.
+    Supported by OCAIRO and Cancer Care Ontario.  Module implemented by Kevin Wang.
     """
     self.parent = parent
 
@@ -28,6 +28,7 @@ class MarginCalculator:
 class MarginCalculatorWidget:
 
   def __init__(self, parent=None):
+    self.chartOptions = ("System", "Random", "P90", "P95", "P99")
     if not parent:
       self.parent = slicer.qMRMLWidget()
       self.parent.setLayout(qt.QVBoxLayout())
@@ -69,12 +70,12 @@ class MarginCalculatorWidget:
     self.reloadAndTestButton.connect('clicked()', self.onReloadAndTest)
 
     # Collapsible button
-    self.inputCollapsibleButton = ctk.ctkCollapsibleButton()
-    self.inputCollapsibleButton.text = "Inputs"
-    self.layout.addWidget(self.inputCollapsibleButton)
+    self.marginCalculationCollapsibleButton = ctk.ctkCollapsibleButton()
+    self.marginCalculationCollapsibleButton.text = "Margin Calculation"
+    self.layout.addWidget(self.marginCalculationCollapsibleButton)
 
     # Layout within the collapsible button
-    self.inputFormLayout = qt.QFormLayout(self.inputCollapsibleButton)
+    self.marginCalculationFormLayout = qt.QFormLayout(self.marginCalculationCollapsibleButton)
 
     # Input Dose Volume selector
     self.inputDoseVolumeSelectorLabel = qt.QLabel('Input Dose Volume:')
@@ -85,7 +86,7 @@ class MarginCalculatorWidget:
     self.inputDoseVolumeSelector.removeEnabled = False
     self.inputDoseVolumeSelector.setMRMLScene( slicer.mrmlScene )
     self.inputDoseVolumeSelector.setToolTip( "Set the input Dose volume" )
-    self.inputFormLayout.addRow(self.inputDoseVolumeSelectorLabel, self.inputDoseVolumeSelector)
+    self.marginCalculationFormLayout.addRow(self.inputDoseVolumeSelectorLabel, self.inputDoseVolumeSelector)
 
     # Reference Dose Volume selector
     self.referenceDoseVolumeSelectorLabel = qt.QLabel()
@@ -97,7 +98,7 @@ class MarginCalculatorWidget:
     self.referenceDoseVolumeSelector.removeEnabled = False
     self.referenceDoseVolumeSelector.setMRMLScene( slicer.mrmlScene )
     self.referenceDoseVolumeSelector.setToolTip( "Set the Reference dose volume" )
-    self.inputFormLayout.addRow(self.referenceDoseVolumeSelectorLabel, self.referenceDoseVolumeSelector)
+    self.marginCalculationFormLayout.addRow(self.referenceDoseVolumeSelectorLabel, self.referenceDoseVolumeSelector)
 
     # Input Contour selector
     self.inputContourSelectorLabel = qt.QLabel('Input Contour:')
@@ -108,22 +109,58 @@ class MarginCalculatorWidget:
     self.inputContourSelector.removeEnabled = False
     self.inputContourSelector.setMRMLScene( slicer.mrmlScene )
     self.inputContourSelector.setToolTip( "Set the input Contour" )
-    self.inputFormLayout.addRow(self.inputContourSelectorLabel, self.inputContourSelector)
+    self.marginCalculationFormLayout.addRow(self.inputContourSelectorLabel, self.inputContourSelector)
+
+    # Systematic error slider
+    self.systematicErrorRangeSlider = ctk.ctkSliderWidget()
+    self.systematicErrorRangeSlider.decimals = 1
+    self.systematicErrorRangeSlider.minimum = 0
+    self.systematicErrorRangeSlider.maximum = 5
+    self.marginCalculationFormLayout.addRow("Systematic Error Range (mm): ", self.systematicErrorRangeSlider)
+
+    # Random error slider
+    self.randomErrorRangeSlider = ctk.ctkSliderWidget()
+    self.randomErrorRangeSlider.decimals = 1
+    self.randomErrorRangeSlider.minimum = 0
+    self.randomErrorRangeSlider.maximum = 5
+    self.marginCalculationFormLayout.addRow("Random Error Range (mm): ", self.randomErrorRangeSlider)
+
+    # ROI radius slider
+    self.ROIRadiusSlider = ctk.ctkSliderWidget()
+    self.ROIRadiusSlider.decimals = 1
+    self.ROIRadiusSlider.minimum = 0
+    self.ROIRadiusSlider.maximum = 50
+    self.marginCalculationFormLayout.addRow("ROI Radius (mm): ", self.ROIRadiusSlider)
 
     # Apply button
-    self.applyButton = qt.QPushButton("Apply")
+    self.applyButton = qt.QPushButton("Calculate")
     self.applyButton.toolTip = "Perform margin calculation"
-    self.layout.addWidget(self.applyButton)
+    self.marginCalculationFormLayout.addRow(self.applyButton)
     self.UpdateApplyButtonState()
 
+    # model and view for stats table
+    self.tableview = qt.QTableView()
+    self.tableview.sortingEnabled = False
+    self.marginCalculationFormLayout.addRow(self.tableview)
+
+    # Save button
+    self.saveButton = qt.QPushButton("Save Result")
+    self.saveButton.toolTip = "Save result as csv."
+    self.saveButton.enabled = False
+    self.marginCalculationFormLayout.addRow(self.saveButton)
+    
     # Add vertical spacer
     self.layout.addStretch(1)
 
     # connections
     self.applyButton.connect('clicked()', self.onApply)
+    self.saveButton.connect('clicked()', self.onSave)
     self.inputDoseVolumeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onInputDoseVolumeSelect)
     self.referenceDoseVolumeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onReferenceDoseVolumeSelect)
     self.inputContourSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onInputContourSelect)
+    self.systematicErrorRangeSlider.connect('valueChanged(double)', self.onSystematicErrorRangeChanged)
+    self.randomErrorRangeSlider.connect('valueChanged(double)', self.onRandomErrorRangeChanged)
+    self.ROIRadiusSlider.connect('valueChanged(double)', self.onROIRadiusChanged)
 
   def UpdateApplyButtonState(self):
     if not self.inputDoseVolumeSelector.currentNode() or not self.referenceDoseVolumeSelector.currentNode() or not self.inputContourSelector.currentNode():
@@ -140,13 +177,37 @@ class MarginCalculatorWidget:
   def onInputContourSelect(self, node):
     self.UpdateApplyButtonState()
 
+  def onSystematicErrorRangeChanged(self, value):
+    self.systematicErrorRange = value
+
+  def onRandomErrorRangeChanged(self, value):
+    self.randomErrorRange = value
+
+  def onROIRadiusChanged(self, value):
+    self.ROIRadius = value
+
   def onApply(self):
     #self.applyButton.text = "Working..."
     self.applyButton.repaint()
     slicer.app.processEvents()
     self.logic = MarginCalculatorLogic()
-    self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.referenceDoseVolumeSelector.currentNode(), self.inputContourSelector.currentNode())
+    self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.referenceDoseVolumeSelector.currentNode(), self.inputContourSelector.currentNode(), self.systematicErrorRange, self.randomErrorRange, self.ROIRadius)
     #self.applyButton.text = "Apply"
+
+  def onSave(self):
+    """save the margin calculation 
+    """
+    if not self.fileDialog:
+      self.fileDialog = qt.QFileDialog(self.parent)
+      self.fileDialog.options = self.fileDialog.DontUseNativeDialog
+      self.fileDialog.acceptMode = self.fileDialog.AcceptSave
+      self.fileDialog.defaultSuffix = "csv"
+      self.fileDialog.setNameFilter("Comma Separated Values (*.csv)")
+      self.fileDialog.connect("fileSelected(QString)", self.onFileSelected)
+    self.fileDialog.show()
+
+  def onFileSelected(self,fileName):
+    self.logic.saveMarginCalculation(fileName)
 
   def onReload(self,moduleName="MarginCalculator"):
     """Generic reload method for any scripted module.
@@ -199,7 +260,6 @@ class MarginCalculatorWidget:
       qt.QMessageBox.warning(slicer.util.mainWindow(), 
           "Reload and Test", 'Exception!\n\n' + str(e) + "\n\nSee Python Console for Stack Trace")
 
-
 #
 # Logic
 #
@@ -212,11 +272,16 @@ class MarginCalculatorLogic:
   def __init__(self):
     pass
   
-  def run(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode):
-    radius = 5.0
-    for i in range(1,10): # systemaic error
+  def run(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, systematicErrorRange, randomErrorRange, ROIRadius):
+    radius = ROIRadius
+    systematicErrorRange = systematicErrorRange*10
+    randomErrorRange = randomErrorRange*10
+    
+    marginResult = []
+    
+    for i in range(1,SystematicErrorRange): # systemaic error
       systemError = i/10.0
-      for j in range(1,2): # random error
+      for j in range(1,randomErrorRange): # random error
         randomError = j/10.0
         D95old = 0.0
         D95 = 0.0
@@ -239,7 +304,29 @@ class MarginCalculatorLogic:
             P99 = k/10.0
           D95old = D95
         print "sys, rad, P90, P95, P99:", systemError, randomError, P90, P95, P99
+        marginResult.append([systemError, randomError, P90, P95, P99])
         
+  
+  def marginAsCSV(self):
+    """
+    print comma separated value file with header keys in quotes
+    """
+    csv = ""
+    header = ""
+    csv = header
+    for i in len(self.marginResult):
+      line = ""
+      for k in len(self.marginResult[i]):
+        line += str(self.marginResult[i,k]) + ","
+      line += "\n"
+      csv += line
+    return csv
+
+  def saveMarginCalculation(self, filename):
+    fp = open(fileName, "w")
+    fp.write(self.marginAsCSV())
+    fp.close()
+  
   def computeDPH(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, systemError, randomError, doseGrowSize):
     # Step 1: morph dose
     outputDoseVolumeNode = slicer.vtkMRMLScalarVolumeNode()
@@ -265,11 +352,9 @@ class MarginCalculatorLogic:
     
     # Step 2: simulate patient motion
     # first convert ribbon model to labelmap
-    #print inputContourNode.__class__
     inputContourNode.SetAndObserveRasterizationReferenceVolumeNodeId(referenceDoseVolumeNode.GetID())
     inputContourNode.SetRasterizationOversamplingFactor(1.0)
     tempLabelmapNode = inputContourNode.GetIndexedLabelmapVolumeNode()
-    #print tempLabelmapNode.__class__
     
     from vtkSlicerMotionSimulatorDoubleArrayModuleMRML import vtkMRMLMotionSimulatorDoubleArrayNode
     motionSimulatorDoubleArrayNode = vtkMRMLMotionSimulatorDoubleArrayNode()
@@ -345,3 +430,71 @@ class MarginCalculatorLogic:
       value = doubleArray.GetComponent(i, 2)
       print "x,y,v", x, y, value
     """
+    
+#
+#
+#
+  
+class Slicelet(object):
+  """A slicer slicelet is a module widget that comes up in stand alone mode
+  implemented as a python class.
+  This class provides common wrapper functionality used by all slicer modlets.
+  """
+  # TODO: put this in a SliceletLib
+  # TODO: parse command line arge
+
+
+  def __init__(self, widgetClass=None):
+    self.parent = qt.QFrame()
+    self.parent.setLayout( qt.QHBoxLayout() )
+
+    self.sliceletPanel = qt.QFrame(self.parent)
+    self.sliceletPanelLayout = qt.QVBoxLayout(self.sliceletPanel)
+    self.sliceletPanelLayout.setMargin(4)
+    self.sliceletPanelLayout.setSpacing(0)
+    self.parent.layout().addWidget(self.sliceletPanel,1)
+
+    # TODO: should have way to pop up python interactor
+    # self.buttons = qt.QFrame()
+    # self.buttons.setLayout( qt.QHBoxLayout() )
+    # self.parent.layout().addWidget(self.buttons)
+    # self.addDataButton = qt.QPushButton("Add Data")
+    # self.buttons.layout().addWidget(self.addDataButton)
+    # self.addDataButton.connect("clicked()",slicer.app.ioManager().openAddDataDialog)
+    # self.loadSceneButton = qt.QPushButton("Load Scene")
+    # self.buttons.layout().addWidget(self.loadSceneButton)
+    # self.loadSceneButton.connect("clicked()",slicer.app.ioManager().openLoadSceneDialog)
+
+    self.layoutManager = slicer.qMRMLLayoutWidget()
+    self.layoutManager.setMRMLScene(slicer.mrmlScene)
+    self.layoutManager.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutFourUpView)
+    # self.layoutManager.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutConventionalView)
+    # self.layoutManager.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUp3DView)
+    # self.layoutManager.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutTabbedSliceView)
+    # self.layoutManager.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutDual3DView)
+    # self.layoutManager.setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
+    self.parent.layout().addWidget(self.layoutManager,2)
+
+    if widgetClass:
+      self.widget = widgetClass(self.sliceletPanel)
+      self.widget.setup()
+    self.parent.show()
+
+
+
+class MarginCalculatorSlicelet(Slicelet):
+  """ Creates the interface when module is run as a stand alone gui app.
+  """
+
+  def __init__(self):
+    super(MarginCalculatorSlicelet,self).__init__(MarginCalculatorWidget)
+
+
+if __name__ == "__main__":
+  # TODO: need a way to access and parse command line arguments
+  # TODO: ideally command line args should handle --xml
+
+  import sys
+  print( sys.argv )
+
+  slicelet = MarginCalculatorSlicelet()
