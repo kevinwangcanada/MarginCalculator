@@ -209,13 +209,11 @@ bool vtkSlicerMotionSimulatorModuleLogic::DoseVolumeContainsDose()
 
   vtkMRMLScalarVolumeNode* doseVolumeNode = this->MotionSimulatorNode->GetInputDoseVolumeNode();
 
-  const char* doseUnitName = doseVolumeNode->GetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str());
-
-  if (doseUnitName != NULL)
+  const char* doseVolumeIdentifier = doseVolumeNode->GetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_VOLUME_IDENTIFIER_ATTRIBUTE_NAME.c_str());
+  if (doseVolumeIdentifier != NULL)
   {
     return true;
   }
-
   return false;
 }
 

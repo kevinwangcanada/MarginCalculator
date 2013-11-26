@@ -254,7 +254,7 @@ void qSlicerDosePopulationHistogramModuleWidget::setup()
   this->Superclass::setup();
 
   // Filter out StructureSet Nodes that are not labelmaps
-  d->MRMLNodeComboBox_Contour->addAttribute( QString("Labelmap"), QString("1") );
+  d->MRMLNodeComboBox_Contour->addAttribute( QString("vtkMRMLScalarVolumeNode"), QString("LabelMap"), 1 );
 
   // Make connections
   this->connect( d->MRMLNodeComboBox_ParameterSet, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT( setDosePopulationHistogramNode(vtkMRMLNode*) ) );
@@ -404,14 +404,14 @@ void qSlicerDosePopulationHistogramModuleWidget::doseVolumeNodeChanged(vtkMRMLNo
   paramNode->SetAndObserveDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
-  //if (d->logic()->DoseVolumeContainsDose())
-  //{
-  //  //d->label_NotDoseVolumeWarning->setText("");
-  //}
-  //else
-  //{
-  //  //d->label_NotDoseVolumeWarning->setText(tr(" Selected volume is not a dose"));
-  //}
+  if (node && !SlicerRtCommon::IsDoseVolumeNode(node))
+  {
+    d->label_NotDoseVolumeWarning->setText(tr(" Selected volume is not a dose volume!"));
+  }
+  else
+  {
+    d->label_NotDoseVolumeWarning->setText("");
+  }
 
   this->updateButtonsState();
 }

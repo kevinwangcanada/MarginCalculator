@@ -20,6 +20,8 @@
 #  define STRCASECMP strcasecmp
 #endif
 
+class vtkMRMLNode;
+
 class SlicerRtCommon
 {
 public:
@@ -158,6 +160,8 @@ public:
   //----------------------------------------------------------------------------
 
 public:
+  /// Determine if a node is a dose volume node
+  static bool IsDoseVolumeNode(vtkMRMLNode* node);
 
 };
 

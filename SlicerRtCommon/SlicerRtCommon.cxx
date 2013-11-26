@@ -1,5 +1,13 @@
 #include "SlicerRtCommon.h"
 
+// MRML includes
+#include <vtkMRMLTransformNode.h>
+#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLModelNode.h>
+#include <vtkMRMLScene.h>
+#include <vtkMRMLDisplayNode.h>
+#include <vtkMRMLColorTableNode.h>
+
 //----------------------------------------------------------------------------
 // Constant strings
 //----------------------------------------------------------------------------
@@ -135,4 +143,24 @@ const std::string SlicerRtCommon::PLANARIMAGE_TEXTURE_VOLUME_REFERENCE_ROLE = "p
 //----------------------------------------------------------------------------
 // Utility functions
 //----------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+bool SlicerRtCommon::IsDoseVolumeNode(vtkMRMLNode* node)
+{
+  if (!node)
+  {
+    return false;
+  }
+
+  if (node->IsA("vtkMRMLScalarVolumeNode"))
+  {
+    const char* doseVolumeIdentifier = node->GetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_VOLUME_IDENTIFIER_ATTRIBUTE_NAME.c_str());
+    if (doseVolumeIdentifier != NULL)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
 

@@ -342,6 +342,7 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   }
 
   outputDoseVolumeNode->SetAndObserveImageData( tempImageData );
+  outputDoseVolumeNode->SetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_VOLUME_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
   outputDoseVolumeNode->HideFromEditorsOff();
 
   // Create display node

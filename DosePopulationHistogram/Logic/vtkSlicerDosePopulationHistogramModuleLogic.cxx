@@ -448,20 +448,20 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
   }
   
   // Create node and fill statistics
-  vtkMRMLDoubleArrayNode* arrayNode = this->DosePopulationHistogramNode->GetOutputDoubleArrayNode();
+  vtkMRMLDoubleArrayNode* outputDoubleArrayNode = this->DosePopulationHistogramNode->GetOutputDoubleArrayNode();
 
-  if (!doubleArrayNode) 
+  if (!outputDoubleArrayNode) 
   {
-    arrayNode = (vtkMRMLDoubleArrayNode*)( this->GetMRMLScene()->CreateNodeByClass("vtkMRMLDoubleArrayNode") );
+    outputDoubleArrayNode = (vtkMRMLDoubleArrayNode*)( this->GetMRMLScene()->CreateNodeByClass("vtkMRMLDoubleArrayNode") );
   }
   std::string DPHArrayNodeName = std::string(doubleArrayNode->GetName()) + SlicerRtCommon::DVH_ARRAY_NODE_NAME_POSTFIX;
   DPHArrayNodeName = this->GetMRMLScene()->GenerateUniqueName(DPHArrayNodeName);
-  arrayNode->SetName(DPHArrayNodeName.c_str());
-  //arrayNode->HideFromEditorsOff();
+  outputDoubleArrayNode->SetName(DPHArrayNodeName.c_str());
+  //outputDoubleArrayNode->HideFromEditorsOff();
 
-  arrayNode->SetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
+  outputDoubleArrayNode->SetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
 
-  vtkDoubleArray* doubleArray = arrayNode->GetArray();
+  vtkDoubleArray* doubleArray = outputDoubleArrayNode->GetArray();
   bool insertPointAtOrigin=true;
   doubleArray->SetNumberOfTuples(numberBins + (insertPointAtOrigin?1:0));
 
@@ -487,7 +487,7 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
     numberBelowDose += numberInBin;
   }
 
-  this->GetMRMLScene()->AddNode(arrayNode);
+  this->GetMRMLScene()->AddNode(outputDoubleArrayNode);
 
   this->Modified();
 }

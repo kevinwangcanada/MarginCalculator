@@ -22,6 +22,9 @@
 // Qt includes
 #include <QDebug>
 
+//
+#include <SlicerRtCommon.h>
+
 // SlicerQt includes
 #include "qSlicerMotionSimulatorModuleWidget.h"
 #include "ui_qSlicerMotionSimulatorModule.h"
@@ -217,7 +220,7 @@ void qSlicerMotionSimulatorModuleWidget::setup()
   this->Superclass::setup();
 
   // Filter out StructureSet Nodes that are not labelmaps
-  d->MRMLNodeComboBox_StructureSet->addAttribute( QString("Labelmap"), QString("1") );
+  d->MRMLNodeComboBox_StructureSet->addAttribute( QString("vtkMRMLScalarVolumeNode"), QString("LabelMap"), 1 );
 
   // Make connections
   this->connect( d->MRMLNodeComboBox_ParameterSet, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT( setMotionSimulatorNode(vtkMRMLNode*) ) );
@@ -270,13 +273,13 @@ void qSlicerMotionSimulatorModuleWidget::doseVolumeNodeChanged(vtkMRMLNode* node
   paramNode->SetAndObserveInputDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
-  if (d->logic()->DoseVolumeContainsDose())
+  if (node && !SlicerRtCommon::IsDoseVolumeNode(node))
   {
-    d->label_NotDoseVolumeWarning->setText("");
+    d->label_NotDoseVolumeWarning->setText(tr(" Selected volume is not a dose volume!"));
   }
   else
   {
-    d->label_NotDoseVolumeWarning->setText(tr(" Selected volume is not a dose"));
+    d->label_NotDoseVolumeWarning->setText("");
   }
 
   this->updateButtonsState();
