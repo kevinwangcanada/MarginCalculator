@@ -23,9 +23,15 @@
 // vtkMRMLDosePopulationHistogram includes
 #include "vtkMRMLDosePopulationHistogramNode.h"
 
+// SlicerRT includes
+#include "SlicerRtCommon.h"
+
 // MRML includes
 #include <vtkMRMLScene.h>
 #include <vtkMRMLDoubleArrayNode.h>
+#include <vtkMRMLChartNode.h>
+#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLMotionSimulatorDoubleArrayNode.h>
 
 // VTK includes
 #include <vtkObjectFactory.h>
@@ -35,16 +41,18 @@
 #include <sstream>
 
 //------------------------------------------------------------------------------
+std::string vtkMRMLDosePopulationHistogramNode::DoseVolumeReferenceRole = std::string("doseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::DoubleArrayReferenceRole = std::string("doubleArray") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::ContourReferenceRole = std::string("contour") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::ChartReferenceRole = std::string("chart") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::OutputDoubleArrayReferenceRole = std::string("outputDoubleArray") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+
+//------------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLDosePopulationHistogramNode);
 
 //----------------------------------------------------------------------------
 vtkMRMLDosePopulationHistogramNode::vtkMRMLDosePopulationHistogramNode()
 {
-  this->DoubleArrayNodeID = NULL;
-  this->DoseVolumeNodeID = NULL;
-  this->ContourNodeID = NULL;
-  this->ChartNodeID = NULL;
-  this->OutputDoubleArrayNodeID = NULL;
   this->UseDoseOption = ART_DPH_USEDMIN;
   this->DPHDoubleArrayNodeIDs.clear();
   this->ShowHideAll = 0;
@@ -56,11 +64,6 @@ vtkMRMLDosePopulationHistogramNode::vtkMRMLDosePopulationHistogramNode()
 //----------------------------------------------------------------------------
 vtkMRMLDosePopulationHistogramNode::~vtkMRMLDosePopulationHistogramNode()
 {
-  this->SetDoubleArrayNodeID(NULL);
-  this->SetDoseVolumeNodeID(NULL);
-  this->SetContourNodeID(NULL);
-  this->SetChartNodeID(NULL);
-  this->SetOutputDoubleArrayNodeID(NULL);
   this->DPHDoubleArrayNodeIDs.clear();
   this->ShowInChartCheckStates.clear();
 }
@@ -72,31 +75,6 @@ void vtkMRMLDosePopulationHistogramNode::WriteXML(ostream& of, int nIndent)
 
   // Write all MRML node attributes into output stream
   vtkIndent indent(nIndent);
-
-  if ( this->DoubleArrayNodeID )
-    {
-    of << indent << " DoubleArrrayNodeID=\"" << this->DoubleArrayNodeID << "\"";
-    }
-
-  if ( this->DoseVolumeNodeID )
-    {
-    of << indent << " DoseVolumeNodeID=\"" << this->DoseVolumeNodeID << "\"";
-    }
-
-  if ( this->ContourNodeID )
-    {
-    of << indent << " ContourNodeID=\"" << this->ContourNodeID << "\"";
-    }
-
-  if ( this->ChartNodeID )
-    {
-    of << indent << " ChartNodeID=\"" << this->ChartNodeID << "\"";
-    }
-
-  if ( this->OutputDoubleArrayNodeID )
-    {
-    of << indent << " OutputDoubleArrayNodeID=\"" << this->OutputDoubleArrayNodeID << "\"";
-    }
 
   of << indent << " UseDoseOption=\"" << this->UseDoseOption << "\"";
 
@@ -135,37 +113,7 @@ void vtkMRMLDosePopulationHistogramNode::ReadXMLAttributes(const char** atts)
     attName = *(atts++);
     attValue = *(atts++);
 
-    if (!strcmp(attName, "DoubleArrayNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveDoubleArrayNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "DoseVolumeNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveDoseVolumeNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "ContourNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveContourNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "ChartNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveChartNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "OutputDoubleArrayNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveOutputDoubleArrayNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "UseDoseOption")) 
+    if (!strcmp(attName, "UseDoseOption")) 
       {
       this->UseDoseOption = 
         (strcmp(attValue,"true") ? false : true);
@@ -233,12 +181,6 @@ void vtkMRMLDosePopulationHistogramNode::Copy(vtkMRMLNode *anode)
 
   vtkMRMLDosePopulationHistogramNode *node = (vtkMRMLDosePopulationHistogramNode *) anode;
 
-  this->SetAndObserveDoubleArrayNodeID(node->DoubleArrayNodeID);
-  this->SetAndObserveDoseVolumeNodeID(node->DoseVolumeNodeID);
-  this->SetAndObserveContourNodeID(node->ContourNodeID);
-  this->SetAndObserveChartNodeID(node->ChartNodeID);
-  this->SetAndObserveOutputDoubleArrayNodeID(node->OutputDoubleArrayNodeID);
-
   this->UseDoseOption = node->UseDoseOption;
 
   this->DPHDoubleArrayNodeIDs = node->DPHDoubleArrayNodeIDs;
@@ -253,13 +195,6 @@ void vtkMRMLDosePopulationHistogramNode::Copy(vtkMRMLNode *anode)
 void vtkMRMLDosePopulationHistogramNode::PrintSelf(ostream& os, vtkIndent indent)
 {
   vtkMRMLNode::PrintSelf(os,indent);
-
-  os << indent << "DoubleArrayNodeID:   " << this->DoubleArrayNodeID << "\n";
-  os << indent << "DoseVolumeNodeID:   " << this->DoseVolumeNodeID << "\n";
-  os << indent << "ContourNodeID:   " << this->ContourNodeID << "\n";
-  os << indent << "ChartNodeID:   " << this->ChartNodeID << "\n";
-  os << indent << "OutputDoubleArrayNodeID:   " << this->OutputDoubleArrayNodeID << "\n";
-  os << indent << "UseDoseOption:   " << (this->UseDoseOption) << "\n";
 
   {
     os << indent << "DPHDoubleArrayNodeIDs:   ";
@@ -283,113 +218,68 @@ void vtkMRMLDosePopulationHistogramNode::PrintSelf(ostream& os, vtkIndent indent
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDosePopulationHistogramNode::SetAndObserveDoubleArrayNodeID(const char* ID)
+vtkMRMLMotionSimulatorDoubleArrayNode* vtkMRMLDosePopulationHistogramNode::GetDoubleArrayNode()
 {
-  if (this->DoubleArrayNodeID && this->Scene)
-  {
-    this->Scene->RemoveReferencedNodeID(this->DoubleArrayNodeID, this);
-  }
-
-  this->SetDoubleArrayNodeID(ID);
-
-  if (ID && this->Scene)
-  {
-    this->Scene->AddReferencedNodeID(this->DoubleArrayNodeID, this);
-  }
+  return vtkMRMLMotionSimulatorDoubleArrayNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLDosePopulationHistogramNode::DoubleArrayReferenceRole.c_str()) );
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDosePopulationHistogramNode::SetAndObserveDoseVolumeNodeID(const char* id)
+void vtkMRMLDosePopulationHistogramNode::SetAndObserveDoubleArrayNode(vtkMRMLMotionSimulatorDoubleArrayNode* node)
 {
-  if (this->DoseVolumeNodeID != NULL)
-    {
-    this->Scene->RemoveReferencedNodeID(this->DoseVolumeNodeID, this);
-    }
-
-  this->SetDoseVolumeNodeID(id);
-
-  if (id)
-    {
-    this->Scene->AddReferencedNodeID(this->DoseVolumeNodeID, this);
-    }
+  this->SetNodeReferenceID(vtkMRMLDosePopulationHistogramNode::DoubleArrayReferenceRole.c_str(), node->GetID());
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDosePopulationHistogramNode::SetAndObserveContourNodeID(const char* id)
+vtkMRMLScalarVolumeNode* vtkMRMLDosePopulationHistogramNode::GetDoseVolumeNode()
 {
-  if (this->ContourNodeID != NULL)
-    {
-    this->Scene->RemoveReferencedNodeID(this->ContourNodeID, this);
-    }
-
-  this->SetContourNodeID(id);
-
-  if (id)
-    {
-    this->Scene->AddReferencedNodeID(this->ContourNodeID, this);
-    }
+  return vtkMRMLScalarVolumeNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLDosePopulationHistogramNode::DoseVolumeReferenceRole.c_str()) );
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDosePopulationHistogramNode::SetAndObserveChartNodeID(const char* ID)
+void vtkMRMLDosePopulationHistogramNode::SetAndObserveDoseVolumeNode(vtkMRMLScalarVolumeNode* node)
 {
-  if (this->ChartNodeID && this->Scene)
-  {
-    this->Scene->RemoveReferencedNodeID(this->ChartNodeID, this);
-  }
-
-  this->SetChartNodeID(ID);
-
-  if (ID && this->Scene)
-  {
-    this->Scene->AddReferencedNodeID(this->ChartNodeID, this);
-  }
+  this->SetNodeReferenceID(vtkMRMLDosePopulationHistogramNode::DoseVolumeReferenceRole.c_str(), node->GetID());
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDosePopulationHistogramNode::SetAndObserveOutputDoubleArrayNodeID(const char* ID)
+vtkMRMLScalarVolumeNode* vtkMRMLDosePopulationHistogramNode::GetContourNode()
 {
-  if (this->OutputDoubleArrayNodeID && this->Scene)
-  {
-    this->Scene->RemoveReferencedNodeID(this->OutputDoubleArrayNodeID, this);
-  }
-
-  this->SetOutputDoubleArrayNodeID(ID);
-
-  if (ID && this->Scene)
-  {
-    this->Scene->AddReferencedNodeID(this->OutputDoubleArrayNodeID, this);
-  }
+  return vtkMRMLScalarVolumeNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLDosePopulationHistogramNode::ContourReferenceRole.c_str()) );
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDosePopulationHistogramNode::UpdateReferenceID(const char *oldID, const char *newID)
+void vtkMRMLDosePopulationHistogramNode::SetAndObserveContourNode(vtkMRMLScalarVolumeNode* node)
 {
-  if (this->DoubleArrayNodeID && !strcmp(oldID, this->DoubleArrayNodeID))
-    {
-    this->SetAndObserveDoubleArrayNodeID(newID);
-    }
-  if (this->DoseVolumeNodeID && !strcmp(oldID, this->DoseVolumeNodeID))
-    {
-    this->SetAndObserveDoseVolumeNodeID(newID);
-    }
-  if (this->ContourNodeID && !strcmp(oldID, this->ContourNodeID))
-    {
-    this->SetAndObserveContourNodeID(newID);
-    }
-  if (this->ChartNodeID && !strcmp(oldID, this->ChartNodeID))
-    {
-    this->SetAndObserveChartNodeID(newID);
-    }
-  if (this->OutputDoubleArrayNodeID && !strcmp(oldID, this->OutputDoubleArrayNodeID))
-    {
-    this->SetAndObserveOutputDoubleArrayNodeID(newID);
-    }
-  for (std::vector<std::string>::iterator it = this->DPHDoubleArrayNodeIDs.begin(); it != this->DPHDoubleArrayNodeIDs.end(); ++it)
-    {
-    if (!it->compare(oldID))
-      {
-      (*it) = newID;
-      }
-    }
+  this->SetNodeReferenceID(vtkMRMLDosePopulationHistogramNode::ContourReferenceRole.c_str(), node->GetID());
 }
+
+//----------------------------------------------------------------------------
+vtkMRMLChartNode* vtkMRMLDosePopulationHistogramNode::GetChartNode()
+{
+  return vtkMRMLChartNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLDosePopulationHistogramNode::ChartReferenceRole.c_str()) );
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLDosePopulationHistogramNode::SetAndObserveChartNode(vtkMRMLChartNode* node)
+{
+  this->SetNodeReferenceID(vtkMRMLDosePopulationHistogramNode::ChartReferenceRole.c_str(), node->GetID());
+}
+
+//----------------------------------------------------------------------------
+vtkMRMLDoubleArrayNode* vtkMRMLDosePopulationHistogramNode::GetOutputDoubleArrayNode()
+{
+  return vtkMRMLDoubleArrayNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLDosePopulationHistogramNode::OutputDoubleArrayReferenceRole.c_str()) );
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLDosePopulationHistogramNode::SetAndObserveOutputDoubleArrayNode(vtkMRMLDoubleArrayNode* node)
+{
+  this->SetNodeReferenceID(vtkMRMLDosePopulationHistogramNode::OutputDoubleArrayReferenceRole.c_str(), node->GetID());
+}
+
+

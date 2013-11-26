@@ -37,6 +37,11 @@
 #define ART_DPH_USEDMIN            0
 #define ART_DPH_USED98             1
 
+class vtkMRMLDoubleArrayNode;
+class vtkMRMLChartNode;
+class vtkMRMLScalarVolumeNode;
+class vtkMRMLMotionSimulatorDoubleArrayNode;
+
 class VTK_SLICER_DOSEPOPULATIONHISTOGRAM_MODULE_LOGIC_EXPORT vtkMRMLDosePopulationHistogramNode 
   : public vtkMRMLNode
 {
@@ -45,7 +50,13 @@ public:
   vtkTypeMacro(vtkMRMLDosePopulationHistogramNode,vtkMRMLNode);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  /// Create instance of a GAD node. 
+  static std::string DoubleArrayReferenceRole;
+  static std::string DoseVolumeReferenceRole;
+  static std::string ContourReferenceRole;
+  static std::string ChartReferenceRole;
+  static std::string OutputDoubleArrayReferenceRole;
+
+/// Create instance of a GAD node. 
   virtual vtkMRMLNode* CreateNodeInstance();
 
   /// Set node attributes from name/value pairs 
@@ -61,35 +72,35 @@ public:
   virtual const char* GetNodeTagName() {return "DosePopulationHistogram";};
 
 public:
-  /// Get dose volume node ID
-  vtkGetStringMacro(DoubleArrayNodeID);
+  /// Get output double array node
+  vtkMRMLMotionSimulatorDoubleArrayNode* GetDoubleArrayNode();
 
-  /// Set and observe dose volume node ID
-  void SetAndObserveDoubleArrayNodeID(const char* ID);
+  /// Set and observe output double array node
+  void SetAndObserveDoubleArrayNode(vtkMRMLMotionSimulatorDoubleArrayNode* node);
 
-  /// Get dose volume node ID
-  vtkGetStringMacro(DoseVolumeNodeID);
+  /// Get input dose volume node 
+  vtkMRMLScalarVolumeNode* GetDoseVolumeNode();
 
-  /// Set and observe dose volume node ID
-  void SetAndObserveDoseVolumeNodeID(const char* id);
+  /// Set and observe input dose volume node
+  void SetAndObserveDoseVolumeNode(vtkMRMLScalarVolumeNode* node);
 
-  /// Get dose volume node ID
-  vtkGetStringMacro(ContourNodeID);
+  /// Get input contour labelmap node
+  vtkMRMLScalarVolumeNode* GetContourNode();
 
-  /// Set and observe dose volume node ID
-  void SetAndObserveContourNodeID(const char* id);
+  /// Set and observe input contour labelmap node 
+  void SetAndObserveContourNode(vtkMRMLScalarVolumeNode* node);
 
-  /// Get chart node ID
-  vtkGetStringMacro(ChartNodeID);
+  /// Get output double array node
+  vtkMRMLChartNode* GetChartNode();
 
-  /// Set and observe chart node ID
-  void SetAndObserveChartNodeID(const char* ID);
+  /// Set and observe output double array node
+  void SetAndObserveChartNode(vtkMRMLChartNode* node);
 
-  /// Get chart node ID
-  vtkGetStringMacro(OutputDoubleArrayNodeID);
+  /// Get output double array node
+  vtkMRMLDoubleArrayNode* GetOutputDoubleArrayNode();
 
-  /// Set and observe chart node ID
-  void SetAndObserveOutputDoubleArrayNodeID(const char* ID);
+  /// Set and observe output double array node
+  void SetAndObserveOutputDoubleArrayNode(vtkMRMLDoubleArrayNode* node);
 
   /// Description:
   /// Set/Get the Operation to perform.
@@ -114,25 +125,6 @@ public:
     return &this->ShowInChartCheckStates;
   }
 
-  /// Update the stored reference to another node in the scene 
-  virtual void UpdateReferenceID(const char *oldID, const char *newID);
-
-protected:
-  /// Set dose volume node ID
-  vtkSetStringMacro(DoubleArrayNodeID);
-
-  /// Set dose volume node ID
-  vtkSetStringMacro(DoseVolumeNodeID);
-
-  /// Set dose volume node ID
-  vtkSetStringMacro(ContourNodeID);
-
-  /// Set chart node ID
-  vtkSetStringMacro(ChartNodeID);
-
-  /// Set output double array node ID
-  vtkSetStringMacro(OutputDoubleArrayNodeID);
-
 protected:
   vtkMRMLDosePopulationHistogramNode();
   ~vtkMRMLDosePopulationHistogramNode();
@@ -140,21 +132,6 @@ protected:
   void operator=(const vtkMRMLDosePopulationHistogramNode&);
 
 protected:
-  /// Selected MarginCalDoubleArray MRML node object ID
-  char* DoubleArrayNodeID;
-
-  /// Selected dose volume MRML node object ID
-  char* DoseVolumeNodeID;
-
-  /// Selected dose volume MRML node object ID
-  char* ContourNodeID;
-
-  /// Selected chart MRML node object ID
-  char* ChartNodeID;
-
-  /// Selected output double array MRML node object ID
-  char* OutputDoubleArrayNodeID;
-
   /// State of Show isodose lines checkbox
   int UseDoseOption;
 

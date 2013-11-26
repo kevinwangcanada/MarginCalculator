@@ -14,9 +14,8 @@
   limitations under the License.
 
   This file was originally developed by Kevin Wang, Radiation Medicine Program, 
-  University Health Network and was supported by Cancer Care Ontario (CCO)'s ACRU program 
-  with funds provided by the Ontario Ministry of Health and Long-Term Care
-  and Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).
+  University Health Network and was supported by 
+  Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).
 
 ==============================================================================*/
 
@@ -67,20 +66,20 @@ qSlicerMotionSimulatorModule::~qSlicerMotionSimulatorModule()
 //-----------------------------------------------------------------------------
 QString qSlicerMotionSimulatorModule::helpText()const
 {
-  return "This loadable modules performs simualtion study of patient motion.";
+  return "This loadable module calculates dose statistics with respect to patient motion using simulation ";
 }
 
 //-----------------------------------------------------------------------------
 QString qSlicerMotionSimulatorModule::acknowledgementText()const
 {
-  return "This work is part of SparKit project, funded by Cancer Care Ontario (CCO)'s ACRU program and Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).";
+  return "This work is funded by Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).";
 }
 
 //-----------------------------------------------------------------------------
 QStringList qSlicerMotionSimulatorModule::contributors()const
 {
   QStringList moduleContributors;
-  moduleContributors << QString("Kevin Wang (RMP, PMH)");
+  moduleContributors << QString("Kevin Wang (Princess Margaret Cancer Center)");
   return moduleContributors;
 }
 

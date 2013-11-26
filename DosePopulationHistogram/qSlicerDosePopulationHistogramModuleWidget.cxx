@@ -38,9 +38,10 @@
 #include "vtkMRMLDosePopulationHistogramNode.h"
 
 // MRML includes
-#include <vtkMRMLVolumeNode.h>
+#include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLChartNode.h>
 #include <vtkMRMLDoubleArrayNode.h>
+
 
 // VTK includes
 #include <vtkStringArray.h>
@@ -205,36 +206,36 @@ void qSlicerDosePopulationHistogramModuleWidget::updateWidgetFromMRML()
   if (paramNode && this->mrmlScene())
   {
     d->MRMLNodeComboBox_ParameterSet->setCurrentNode(paramNode);
-    if (paramNode->GetDoubleArrayNodeID() && strcmp(paramNode->GetDoubleArrayNodeID(),""))
+    if (paramNode->GetDoubleArrayNode())
     {
-      d->MRMLNodeComboBox_DoubleArray->setCurrentNode(paramNode->GetDoubleArrayNodeID());
+      d->MRMLNodeComboBox_DoubleArray->setCurrentNode(paramNode->GetDoubleArrayNode());
     }
     else
     {
       this->doubleArrayNodeChanged(d->MRMLNodeComboBox_DoubleArray->currentNode());
     }
 
-    if (paramNode->GetDoseVolumeNodeID() && strcmp(paramNode->GetDoseVolumeNodeID(),""))
+    if (paramNode->GetDoseVolumeNode())
     {
-      d->MRMLNodeComboBox_DoseVolume->setCurrentNode(paramNode->GetDoseVolumeNodeID());
+      d->MRMLNodeComboBox_DoseVolume->setCurrentNode(paramNode->GetDoseVolumeNode());
     }
     else
     {
       this->doseVolumeNodeChanged(d->MRMLNodeComboBox_DoseVolume->currentNode());
     }
 
-    if (paramNode->GetContourNodeID() && strcmp(paramNode->GetContourNodeID(),""))
+    if (paramNode->GetContourNode())
     {
-      d->MRMLNodeComboBox_Contour->setCurrentNode(paramNode->GetContourNodeID());
+      d->MRMLNodeComboBox_Contour->setCurrentNode(paramNode->GetContourNode());
     }
     else
     {
       this->contourNodeChanged(d->MRMLNodeComboBox_Contour->currentNode());
     }
 
-    if (paramNode->GetChartNodeID() && strcmp(paramNode->GetChartNodeID(),""))
+    if (paramNode->GetChartNode())
     {
-      d->MRMLNodeComboBox_Chart->setCurrentNode(paramNode->GetChartNodeID());
+      d->MRMLNodeComboBox_Chart->setCurrentNode(paramNode->GetChartNode());
     }
     else
     {
@@ -251,6 +252,9 @@ void qSlicerDosePopulationHistogramModuleWidget::setup()
   Q_D(qSlicerDosePopulationHistogramModuleWidget);
   d->setupUi(this);
   this->Superclass::setup();
+
+  // Filter out StructureSet Nodes that are not labelmaps
+  d->MRMLNodeComboBox_Contour->addAttribute( QString("Labelmap"), QString("1") );
 
   // Make connections
   this->connect( d->MRMLNodeComboBox_ParameterSet, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT( setDosePopulationHistogramNode(vtkMRMLNode*) ) );
@@ -282,8 +286,7 @@ void qSlicerDosePopulationHistogramModuleWidget::updateButtonsState()
   if (paramNode)
   {
     // Enable/disable ComputeDVH button
-    bool DPHCanBeComputed = paramNode->GetDoubleArrayNodeID()
-                     && strcmp(paramNode->GetDoubleArrayNodeID(), "");
+    bool DPHCanBeComputed = paramNode->GetDoubleArrayNode();
     d->pushButton_ComputeDPH->setEnabled(DPHCanBeComputed);
   }
 }
@@ -299,8 +302,7 @@ void qSlicerDosePopulationHistogramModuleWidget::updateChartCheckboxesState()
     return;
   }
 
-  vtkMRMLChartNode* chartNode = vtkMRMLChartNode::SafeDownCast(
-    this->mrmlScene()->GetNodeByID(paramNode->GetChartNodeID()));
+  vtkMRMLChartNode* chartNode = paramNode->GetChartNode();
 
   // If there is no chart node selected, disable all checkboxes
   if (chartNode == NULL)
@@ -381,7 +383,7 @@ void qSlicerDosePopulationHistogramModuleWidget::doubleArrayNodeChanged(vtkMRMLN
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveDoubleArrayNodeID(node->GetID());
+  paramNode->SetAndObserveDoubleArrayNode(vtkMRMLMotionSimulatorDoubleArrayNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   this->updateButtonsState();
@@ -399,7 +401,7 @@ void qSlicerDosePopulationHistogramModuleWidget::doseVolumeNodeChanged(vtkMRMLNo
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveDoseVolumeNodeID(node->GetID());
+  paramNode->SetAndObserveDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   //if (d->logic()->DoseVolumeContainsDose())
@@ -426,7 +428,7 @@ void qSlicerDosePopulationHistogramModuleWidget::contourNodeChanged(vtkMRMLNode*
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveContourNodeID(node->GetID());
+  paramNode->SetAndObserveContourNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   this->updateButtonsState();
@@ -474,7 +476,7 @@ void qSlicerDosePopulationHistogramModuleWidget::chartNodeChanged(vtkMRMLNode* n
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveChartNodeID(node->GetID());
+  paramNode->SetAndObserveChartNode(vtkMRMLChartNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   this->updateButtonsState();

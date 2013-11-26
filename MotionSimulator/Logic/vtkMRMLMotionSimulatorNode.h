@@ -32,12 +32,19 @@
 
 #include "vtkSlicerMotionSimulatorModuleLogicExport.h"
 
+class vtkMRMLScalarVolumeNode;
+class vtkMRMLMotionSimulatorDoubleArrayNode;
+
 class VTK_SLICER_MOTIONSIMULATOR_MODULE_LOGIC_EXPORT vtkMRMLMotionSimulatorNode : public vtkMRMLNode
 {
 public:
   static vtkMRMLMotionSimulatorNode *New();
   vtkTypeMacro(vtkMRMLMotionSimulatorNode, vtkMRMLNode);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  static std::string InputDoseVolumeReferenceRole;
+  static std::string InputContourReferenceRole;
+  static std::string OutputDoubleArrayReferenceRole;
 
   /// Create instance of a GAD node. 
   virtual vtkMRMLNode* CreateNodeInstance();
@@ -55,27 +62,24 @@ public:
   virtual const char* GetNodeTagName() {return "MotionSimulator";};
 
 public:
-  /// Get dose volume node ID
-  vtkGetStringMacro(InputDoseVolumeNodeID);
+  /// Get input dose volume node 
+  vtkMRMLScalarVolumeNode* GetInputDoseVolumeNode();
 
-  /// Set and observe dose volume node ID
-  void SetAndObserveInputDoseVolumeNodeID(const char* id);
+  /// Set and observe input dose volume node
+  void SetAndObserveInputDoseVolumeNode(vtkMRMLScalarVolumeNode* node);
 
-  /// Get dose volume node ID
-  vtkGetStringMacro(InputContourNodeID);
+  /// Get input contour labelmap node
+  vtkMRMLScalarVolumeNode* GetInputContourNode();
 
-  /// Set and observe dose volume node ID
-  void SetAndObserveInputContourNodeID(const char* id);
+  /// Set and observe input contour labelmap node 
+  void SetAndObserveInputContourNode(vtkMRMLScalarVolumeNode* node);
 
-  /// Get output hierarchy node ID
-  vtkGetStringMacro(OutputDoubleArrayNodeID);
+  /// Get output double array node
+  vtkMRMLMotionSimulatorDoubleArrayNode* GetOutputDoubleArrayNode();
 
-  /// Set and observe output hierarchy node ID
-  void SetAndObserveOutputDoubleArrayNodeID(const char* id);
+  /// Set and observe output double array node
+  void SetAndObserveOutputDoubleArrayNode(vtkMRMLMotionSimulatorDoubleArrayNode* node);
 
-  /// Update the stored reference to another node in the scene 
-  virtual void UpdateReferenceID(const char *oldID, const char *newID);
- 
   // Description:
 
   /// Get/Set Save labelmaps checkbox state
@@ -111,32 +115,13 @@ public:
   vtkSetMacro(NumberOfFraction, int);
 
 protected:
-  /// Set dose volume node ID
-  vtkSetStringMacro(InputDoseVolumeNodeID);
-
-  /// Set dose volume node ID
-  vtkSetStringMacro(InputContourNodeID);
-
-  /// Set output hierarchy node ID
-  vtkSetStringMacro(OutputDoubleArrayNodeID);
-
-protected:
   vtkMRMLMotionSimulatorNode();
   ~vtkMRMLMotionSimulatorNode();
   vtkMRMLMotionSimulatorNode(const vtkMRMLMotionSimulatorNode&);
   void operator=(const vtkMRMLMotionSimulatorNode&);
 
 protected:
-  /// Selected dose volume MRML node object ID
-  char* InputDoseVolumeNodeID;
-
-  /// Selected dose volume MRML node object ID
-  char* InputContourNodeID;
-
-  /// Selected dose volume MRML node object ID
-  char* OutputDoubleArrayNodeID;
-
-  /// State of Show scalarbar checkbox
+  /// 
   double XSysSD;
   double YSysSD;
   double ZSysSD;

@@ -323,14 +323,10 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
     return;
   }
 
-  vtkMRMLMotionSimulatorDoubleArrayNode* doubleArrayNode = vtkMRMLMotionSimulatorDoubleArrayNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetDoubleArrayNodeID()));
-  vtkMRMLScalarVolumeNode* doseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetDoseVolumeNodeID()));
-  //vtkMRMLContourNode* contourNode = vtkMRMLContourNode::SafeDownCast(
-  //  this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetContourNodeID()));
-  vtkMRMLScalarVolumeNode* contourNode = vtkMRMLScalarVolumeNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetContourNodeID()));
+  vtkMRMLMotionSimulatorDoubleArrayNode* doubleArrayNode = this->DosePopulationHistogramNode->GetDoubleArrayNode();
+  vtkMRMLScalarVolumeNode* doseVolumeNode = this->DosePopulationHistogramNode->GetDoseVolumeNode();
+  //vtkMRMLContourNode* contourNode = this->DosePopulationHistogramNode->GetContourNode();
+  vtkMRMLScalarVolumeNode* contourNode = this->DosePopulationHistogramNode->GetContourNode();
   // Make sure inputs are initialized
   if (!doseVolumeNode || !contourNode || !doubleArrayNode)
   {
@@ -452,8 +448,7 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
   }
   
   // Create node and fill statistics
-  vtkMRMLDoubleArrayNode* arrayNode = vtkMRMLDoubleArrayNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetOutputDoubleArrayNodeID()));
+  vtkMRMLDoubleArrayNode* arrayNode = this->DosePopulationHistogramNode->GetOutputDoubleArrayNode();
 
   if (!doubleArrayNode) 
   {
@@ -505,10 +500,8 @@ void vtkSlicerDosePopulationHistogramModuleLogic::AddDPHToSelectedChart(const ch
     return;
   }
 
-  vtkMRMLChartNode* chartNode = vtkMRMLChartNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetChartNodeID()));
-  vtkMRMLMotionSimulatorDoubleArrayNode* doubleArrayNode = vtkMRMLMotionSimulatorDoubleArrayNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetDoubleArrayNodeID()));
+  vtkMRMLChartNode* chartNode = this->DosePopulationHistogramNode->GetChartNode();
+  vtkMRMLMotionSimulatorDoubleArrayNode* doubleArrayNode = this->DosePopulationHistogramNode->GetDoubleArrayNode();
 
   if (!chartNode || !doubleArrayNode)
   {
@@ -557,8 +550,7 @@ void vtkSlicerDosePopulationHistogramModuleLogic::RemoveDPHFromSelectedChart(con
     return;
   }
 
-  vtkMRMLChartNode* chartNode = vtkMRMLChartNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetChartNodeID()));
+  vtkMRMLChartNode* chartNode = this->DosePopulationHistogramNode->GetChartNode();
 
   if (!chartNode)
   {

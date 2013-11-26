@@ -209,12 +209,9 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   double spacingX2, spacingY2, spacingZ2;
   int dimensions2[3] = {0, 0, 0};
 
-  vtkSmartPointer<vtkMRMLScalarVolumeNode> referenceDoseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DoseMorphologyNode->GetReferenceDoseVolumeNodeID()));
-  vtkSmartPointer<vtkMRMLScalarVolumeNode> inputDoseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DoseMorphologyNode->GetInputDoseVolumeNodeID()));
-  vtkSmartPointer<vtkMRMLScalarVolumeNode> outputDoseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->DoseMorphologyNode->GetOutputDoseVolumeNodeID()));
+  vtkSmartPointer<vtkMRMLScalarVolumeNode> referenceDoseVolumeNode = this->DoseMorphologyNode->GetReferenceDoseVolumeNode();
+  vtkSmartPointer<vtkMRMLScalarVolumeNode> inputDoseVolumeNode = this->DoseMorphologyNode->GetInputDoseVolumeNode();
+  vtkSmartPointer<vtkMRMLScalarVolumeNode> outputDoseVolumeNode = this->DoseMorphologyNode->GetOutputDoseVolumeNode();
 
   // Make sure inputs are initialized
   if (!this->GetMRMLScene() || !referenceDoseVolumeNode || !inputDoseVolumeNode || !outputDoseVolumeNode)

@@ -207,8 +207,7 @@ bool vtkSlicerMotionSimulatorModuleLogic::DoseVolumeContainsDose()
     return false;
     }
 
-  vtkMRMLScalarVolumeNode* doseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetInputDoseVolumeNodeID()));
+  vtkMRMLScalarVolumeNode* doseVolumeNode = this->MotionSimulatorNode->GetInputDoseVolumeNode();
 
   const char* doseUnitName = doseVolumeNode->GetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str());
 
@@ -285,14 +284,10 @@ void vtkSlicerMotionSimulatorModuleLogic::GetStencilForContour(vtkMRMLScalarVolu
 //---------------------------------------------------------------------------
 int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
 {
-  vtkMRMLScalarVolumeNode* doseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetInputDoseVolumeNodeID()));
-  //vtkMRMLContourNode* contourNode = vtkMRMLContourNode::SafeDownCast(
-  //  this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetInputContourNodeID()));
-  vtkMRMLScalarVolumeNode* contourNode = vtkMRMLScalarVolumeNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetInputContourNodeID()));
-  vtkMRMLMotionSimulatorDoubleArrayNode* outputArrayNode = vtkMRMLMotionSimulatorDoubleArrayNode::SafeDownCast(
-    this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetOutputDoubleArrayNodeID()));
+  vtkMRMLScalarVolumeNode* doseVolumeNode = this->MotionSimulatorNode->GetInputDoseVolumeNode();
+  //vtkMRMLContourNode* contourNode = this->MotionSimulatorNode->GetInputContourNode();
+  vtkMRMLScalarVolumeNode* contourNode = this->MotionSimulatorNode->GetInputContourNode();
+  vtkMRMLMotionSimulatorDoubleArrayNode* outputArrayNode = this->MotionSimulatorNode->GetOutputDoubleArrayNode();
   // Make sure inputs are initialized
   if (!this->GetMRMLScene() || !this->MotionSimulatorNode || !doseVolumeNode || !contourNode || !outputArrayNode)
   {

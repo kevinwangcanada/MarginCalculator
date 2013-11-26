@@ -23,6 +23,9 @@
 // MRMLDoseAccumulation includes
 #include "vtkMRMLDoseMorphologyNode.h"
 
+// SlicerRT includes
+#include "SlicerRtCommon.h"
+
 // MRML includes
 #include <vtkMRMLScene.h>
 #include <vtkMRMLScalarVolumeNode.h>
@@ -35,14 +38,16 @@
 #include <sstream>
 
 //------------------------------------------------------------------------------
+std::string vtkMRMLDoseMorphologyNode::ReferenceDoseVolumeReferenceRole = std::string("referenceDoseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDoseMorphologyNode::InputDoseVolumeReferenceRole = std::string("inputDoseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDoseMorphologyNode::OutputDoseVolumeReferenceRole = std::string("outputDoseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+
+//------------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLDoseMorphologyNode);
 
 //----------------------------------------------------------------------------
 vtkMRMLDoseMorphologyNode::vtkMRMLDoseMorphologyNode()
 {
-  this->ReferenceDoseVolumeNodeID = NULL;
-  this->InputDoseVolumeNodeID = NULL;
-  this->OutputDoseVolumeNodeID = NULL;
   this->Operation = SLICERRT_EXPAND_BY_SCALING;
   this->XSize = 1;
   this->YSize = 1;
@@ -54,9 +59,6 @@ vtkMRMLDoseMorphologyNode::vtkMRMLDoseMorphologyNode()
 //----------------------------------------------------------------------------
 vtkMRMLDoseMorphologyNode::~vtkMRMLDoseMorphologyNode()
 {
-  this->SetReferenceDoseVolumeNodeID(NULL);
-  this->SetInputDoseVolumeNodeID(NULL);
-  this->SetOutputDoseVolumeNodeID(NULL);
 }
 
 //----------------------------------------------------------------------------
@@ -66,33 +68,6 @@ void vtkMRMLDoseMorphologyNode::WriteXML(ostream& of, int nIndent)
 
   // Write all MRML node attributes into output stream
   vtkIndent indent(nIndent);
-
-  {
-    std::stringstream ss;
-    if ( this->ReferenceDoseVolumeNodeID )
-      {
-      ss << this->ReferenceDoseVolumeNodeID;
-      of << indent << " ReferenceDoseVolumeNodeID=\"" << ss.str() << "\"";
-      }
-  }
-
-  {
-    std::stringstream ss;
-    if ( this->InputDoseVolumeNodeID )
-      {
-      ss << this->InputDoseVolumeNodeID;
-      of << indent << " InputDoseVolumeNodeID=\"" << ss.str() << "\"";
-      }
-  }
-
-  {
-    std::stringstream ss;
-    if ( this->OutputDoseVolumeNodeID )
-      {
-      ss << this->OutputDoseVolumeNodeID;
-      of << indent << " OutputDoseVolumeNodeID=\"" << ss.str() << "\"";
-      }
-  }
 
   of << indent << " Operation=\"" << (this->Operation) << "\"";
 
@@ -117,25 +92,7 @@ void vtkMRMLDoseMorphologyNode::ReadXMLAttributes(const char** atts)
     attName = *(atts++);
     attValue = *(atts++);
 
-    if (!strcmp(attName, "ReferenceDoseVolumeNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveReferenceDoseVolumeNodeID(ss.str().c_str());
-      }
-    if (!strcmp(attName, "InputDoseVolumeNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveInputDoseVolumeNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "OutputDoseVolumeNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveOutputDoseVolumeNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "Operation")) 
+    if (!strcmp(attName, "Operation")) 
       {
       this->Operation = 
         (strcmp(attValue,"true") ? false : true);
@@ -168,10 +125,6 @@ void vtkMRMLDoseMorphologyNode::Copy(vtkMRMLNode *anode)
 
   vtkMRMLDoseMorphologyNode *node = (vtkMRMLDoseMorphologyNode *)anode;
 
-  this->SetAndObserveReferenceDoseVolumeNodeID(node->ReferenceDoseVolumeNodeID);
-  this->SetAndObserveInputDoseVolumeNodeID(node->InputDoseVolumeNodeID);
-  this->SetAndObserveOutputDoseVolumeNodeID(node->OutputDoseVolumeNodeID);
-
   this->Operation = node->Operation;
   this->XSize = node->XSize;
   this->YSize = node->YSize;
@@ -186,9 +139,6 @@ void vtkMRMLDoseMorphologyNode::PrintSelf(ostream& os, vtkIndent indent)
 {
   vtkMRMLNode::PrintSelf(os,indent);
 
-  os << indent << "ReferenceDoseVolumeNodeID:   " << this->ReferenceDoseVolumeNodeID << "\n";
-  os << indent << "InputDoseVolumeNodeID:   " << this->InputDoseVolumeNodeID << "\n";
-  os << indent << "OutputDoseVolumeNodeID:   " << this->OutputDoseVolumeNodeID << "\n";
   os << indent << "Operation:   " << (this->Operation) << "\n";
   os << indent << "XSize:   " << (this->XSize) << "\n";
   os << indent << "YSize:   " << (this->YSize) << "\n";
@@ -196,66 +146,41 @@ void vtkMRMLDoseMorphologyNode::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDoseMorphologyNode::UpdateReferenceID(const char *oldID, const char *newID)
+vtkMRMLScalarVolumeNode* vtkMRMLDoseMorphologyNode::GetReferenceDoseVolumeNode()
 {
-  if (this->ReferenceDoseVolumeNodeID && !strcmp(oldID, this->ReferenceDoseVolumeNodeID))
-    {
-    this->SetAndObserveReferenceDoseVolumeNodeID(newID);
-    }
-  if (this->InputDoseVolumeNodeID && !strcmp(oldID, this->InputDoseVolumeNodeID))
-    {
-    this->SetAndObserveInputDoseVolumeNodeID(newID);
-    }
-  if (this->OutputDoseVolumeNodeID && !strcmp(oldID, this->OutputDoseVolumeNodeID))
-    {
-    this->SetAndObserveOutputDoseVolumeNodeID(newID);
-    }
+  return vtkMRMLScalarVolumeNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLDoseMorphologyNode::ReferenceDoseVolumeReferenceRole.c_str()) );
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDoseMorphologyNode::SetAndObserveReferenceDoseVolumeNodeID(const char* id)
+void vtkMRMLDoseMorphologyNode::SetAndObserveReferenceDoseVolumeNode(vtkMRMLScalarVolumeNode* node)
 {
-  if (this->ReferenceDoseVolumeNodeID != NULL)
-    {
-    this->Scene->RemoveReferencedNodeID(this->ReferenceDoseVolumeNodeID, this);
-    }
-
-  this->SetReferenceDoseVolumeNodeID(id);
-
-  if (id)
-    {
-    this->Scene->AddReferencedNodeID(this->ReferenceDoseVolumeNodeID, this);
-    }
+  this->SetNodeReferenceID(vtkMRMLDoseMorphologyNode::ReferenceDoseVolumeReferenceRole.c_str(), node->GetID());
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDoseMorphologyNode::SetAndObserveInputDoseVolumeNodeID(const char* id)
+vtkMRMLScalarVolumeNode* vtkMRMLDoseMorphologyNode::GetInputDoseVolumeNode()
 {
-  if (this->InputDoseVolumeNodeID != NULL)
-    {
-    this->Scene->RemoveReferencedNodeID(this->InputDoseVolumeNodeID, this);
-    }
-
-  this->SetInputDoseVolumeNodeID(id);
-
-  if (id)
-    {
-    this->Scene->AddReferencedNodeID(this->InputDoseVolumeNodeID, this);
-    }
+  return vtkMRMLScalarVolumeNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLDoseMorphologyNode::InputDoseVolumeReferenceRole.c_str()) );
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLDoseMorphologyNode::SetAndObserveOutputDoseVolumeNodeID(const char* id)
+void vtkMRMLDoseMorphologyNode::SetAndObserveInputDoseVolumeNode(vtkMRMLScalarVolumeNode* node)
 {
-  if (this->OutputDoseVolumeNodeID != NULL)
-    {
-    this->Scene->RemoveReferencedNodeID(this->OutputDoseVolumeNodeID, this);
-    }
-
-  this->SetOutputDoseVolumeNodeID(id);
-
-  if (id)
-    {
-    this->Scene->AddReferencedNodeID(this->OutputDoseVolumeNodeID, this);
-    }
+  this->SetNodeReferenceID(vtkMRMLDoseMorphologyNode::InputDoseVolumeReferenceRole.c_str(), node->GetID());
 }
+
+//----------------------------------------------------------------------------
+vtkMRMLScalarVolumeNode* vtkMRMLDoseMorphologyNode::GetOutputDoseVolumeNode()
+{
+  return vtkMRMLScalarVolumeNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLDoseMorphologyNode::OutputDoseVolumeReferenceRole.c_str()) );
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLDoseMorphologyNode::SetAndObserveOutputDoseVolumeNode(vtkMRMLScalarVolumeNode* node)
+{
+  this->SetNodeReferenceID(vtkMRMLDoseMorphologyNode::OutputDoseVolumeReferenceRole.c_str(), node->GetID());
+}
+

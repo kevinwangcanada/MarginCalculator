@@ -14,9 +14,8 @@
   limitations under the License.
 
   This file was originally developed by Kevin Wang, Radiation Medicine Program, 
-  University Health Network and was supported by Cancer Care Ontario (CCO)'s ACRU program 
-  with funds provided by the Ontario Ministry of Health and Long-Term Care
-  and Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).
+  University Health Network and was supported by 
+  Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).
 
 ==============================================================================*/
 
@@ -176,39 +175,30 @@ void qSlicerMotionSimulatorModuleWidget::updateWidgetFromMRML()
   if (paramNode && this->mrmlScene())
   {
     d->MRMLNodeComboBox_ParameterSet->setCurrentNode(paramNode);
-    if (paramNode->GetInputDoseVolumeNodeID() && strcmp(paramNode->GetInputDoseVolumeNodeID(),""))
+    if (paramNode->GetInputDoseVolumeNode())
     {
-      d->MRMLNodeComboBox_DoseVolume->setCurrentNode(paramNode->GetInputDoseVolumeNodeID());
+      d->MRMLNodeComboBox_DoseVolume->setCurrentNode(paramNode->GetInputDoseVolumeNode());
     }
     else
     {
       this->doseVolumeNodeChanged(d->MRMLNodeComboBox_DoseVolume->currentNode());
     }
-    if (paramNode->GetInputContourNodeID() && strcmp(paramNode->GetInputContourNodeID(),""))
+    if (paramNode->GetInputContourNode())
     {
-      d->MRMLNodeComboBox_StructureSet->setCurrentNode(paramNode->GetInputContourNodeID());
+      d->MRMLNodeComboBox_StructureSet->setCurrentNode(paramNode->GetInputContourNode());
     }
     else
     {
       this->structureSetNodeChanged(d->MRMLNodeComboBox_StructureSet->currentNode());
     }
-    if (paramNode->GetOutputDoubleArrayNodeID() && strcmp(paramNode->GetOutputDoubleArrayNodeID(),""))
+    if (paramNode->GetOutputDoubleArrayNode())
     {
-      d->MRMLNodeComboBox_OutputArray->setCurrentNode(paramNode->GetOutputDoubleArrayNodeID());
+      d->MRMLNodeComboBox_OutputArray->setCurrentNode(paramNode->GetOutputDoubleArrayNode());
     }
     else
     {
       this->outputArrayNodeChanged(d->MRMLNodeComboBox_OutputArray->currentNode());
     }
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
-    //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
     //d->lineEdit_NumberOfSimulation->setText(QString(paramNode->GetNumberOfSimulation()));
   }
 }
@@ -225,6 +215,9 @@ void qSlicerMotionSimulatorModuleWidget::setup()
   Q_D(qSlicerMotionSimulatorModuleWidget);
   d->setupUi(this);
   this->Superclass::setup();
+
+  // Filter out StructureSet Nodes that are not labelmaps
+  d->MRMLNodeComboBox_StructureSet->addAttribute( QString("Labelmap"), QString("1") );
 
   // Make connections
   this->connect( d->MRMLNodeComboBox_ParameterSet, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT( setMotionSimulatorNode(vtkMRMLNode*) ) );
@@ -274,16 +267,16 @@ void qSlicerMotionSimulatorModuleWidget::doseVolumeNodeChanged(vtkMRMLNode* node
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveInputDoseVolumeNodeID(node->GetID());
+  paramNode->SetAndObserveInputDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   if (d->logic()->DoseVolumeContainsDose())
   {
-    //d->label_NotDoseVolumeWarning->setText("");
+    d->label_NotDoseVolumeWarning->setText("");
   }
   else
   {
-    //d->label_NotDoseVolumeWarning->setText(tr(" Selected volume is not a dose"));
+    d->label_NotDoseVolumeWarning->setText(tr(" Selected volume is not a dose"));
   }
 
   this->updateButtonsState();
@@ -301,7 +294,7 @@ void qSlicerMotionSimulatorModuleWidget::structureSetNodeChanged(vtkMRMLNode* no
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveInputContourNodeID(node->GetID());
+  paramNode->SetAndObserveInputContourNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   this->updateButtonsState();
@@ -319,7 +312,7 @@ void qSlicerMotionSimulatorModuleWidget::outputArrayNodeChanged(vtkMRMLNode* nod
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveOutputDoubleArrayNodeID(node->GetID());
+  paramNode->SetAndObserveOutputDoubleArrayNode(vtkMRMLMotionSimulatorDoubleArrayNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   this->updateButtonsState();
@@ -463,13 +456,9 @@ void qSlicerMotionSimulatorModuleWidget::updateButtonsState()
   }
 
   bool applyEnabled = d->logic()->GetMotionSimulatorNode()
-                   && d->logic()->GetMotionSimulatorNode()->GetInputDoseVolumeNodeID()
-                   && strcmp(d->logic()->GetMotionSimulatorNode()->GetInputDoseVolumeNodeID(), "")
-                   && d->logic()->GetMotionSimulatorNode()->GetInputContourNodeID()
-                   && strcmp(d->logic()->GetMotionSimulatorNode()->GetInputContourNodeID(), "")
-                   && d->logic()->GetMotionSimulatorNode()->GetOutputDoubleArrayNodeID()
-                   && strcmp(d->logic()->GetMotionSimulatorNode()->GetOutputDoubleArrayNodeID(), "")
-                   ;
+                   && d->logic()->GetMotionSimulatorNode()->GetInputDoseVolumeNode()
+                   && d->logic()->GetMotionSimulatorNode()->GetInputContourNode()
+                   && d->logic()->GetMotionSimulatorNode()->GetOutputDoubleArrayNode() ;
   d->pushButton_RunSimulation->setEnabled(true);
 }
 
@@ -480,7 +469,7 @@ void qSlicerMotionSimulatorModuleWidget::runSimulationClicked()
 
   QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 
-  // 
+  // perform the simulation
   d->logic()->RunSimulation();
 
   QApplication::restoreOverrideCursor();

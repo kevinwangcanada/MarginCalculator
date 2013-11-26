@@ -36,12 +36,18 @@
 #define SLICERRT_EXPAND_BY_SCALING            0
 #define SLICERRT_EXPAND_BY_DILATION           1
 
+class vtkMRMLScalarVolumeNode;
+
 class VTK_SLICER_DOSEMORPHOLOGY_MODULE_LOGIC_EXPORT vtkMRMLDoseMorphologyNode : public vtkMRMLNode
 {
 public:
   static vtkMRMLDoseMorphologyNode *New();
   vtkTypeMacro(vtkMRMLDoseMorphologyNode, vtkMRMLNode);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  static std::string ReferenceDoseVolumeReferenceRole;
+  static std::string InputDoseVolumeReferenceRole;
+  static std::string OutputDoseVolumeReferenceRole;
 
   /// Create instance of a GAD node. 
   virtual vtkMRMLNode* CreateNodeInstance();
@@ -59,27 +65,24 @@ public:
   virtual const char* GetNodeTagName() {return "DoseMorphology";};
 
 public:
-  /// Get dose volume node ID
-  vtkGetStringMacro(ReferenceDoseVolumeNodeID);
+  /// Get input dose volume node 
+  vtkMRMLScalarVolumeNode* GetInputDoseVolumeNode();
 
-  /// Set and observe dose volume node ID
-  void SetAndObserveReferenceDoseVolumeNodeID(const char* id);
+  /// Set and observe input dose volume node
+  void SetAndObserveInputDoseVolumeNode(vtkMRMLScalarVolumeNode* node);
 
-  /// Get dose volume node ID
-  vtkGetStringMacro(InputDoseVolumeNodeID);
+  /// Get input contour labelmap node
+  vtkMRMLScalarVolumeNode* GetReferenceDoseVolumeNode();
 
-  /// Set and observe dose volume node ID
-  void SetAndObserveInputDoseVolumeNodeID(const char* id);
+  /// Set and observe input contour labelmap node 
+  void SetAndObserveReferenceDoseVolumeNode(vtkMRMLScalarVolumeNode* node);
 
-  /// Get output hierarchy node ID
-  vtkGetStringMacro(OutputDoseVolumeNodeID);
+  /// Get output double array node
+  vtkMRMLScalarVolumeNode* GetOutputDoseVolumeNode();
 
-  /// Set and observe output hierarchy node ID
-  void SetAndObserveOutputDoseVolumeNodeID(const char* id);
+  /// Set and observe output double array node
+  void SetAndObserveOutputDoseVolumeNode(vtkMRMLScalarVolumeNode* node);
 
-  /// Update the stored reference to another node in the scene 
-  virtual void UpdateReferenceID(const char *oldID, const char *newID);
- 
   // Description:
   // Set/Get the Operation to perform.
   vtkSetMacro(Operation,int);
@@ -100,31 +103,12 @@ public:
   vtkSetMacro(ZSize, double);
 
 protected:
-  /// Set dose volume node ID
-  vtkSetStringMacro(ReferenceDoseVolumeNodeID);
-
-  /// Set dose volume node ID
-  vtkSetStringMacro(InputDoseVolumeNodeID);
-
-  /// Set output hierarchy node ID
-  vtkSetStringMacro(OutputDoseVolumeNodeID);
-
-protected:
   vtkMRMLDoseMorphologyNode();
   ~vtkMRMLDoseMorphologyNode();
   vtkMRMLDoseMorphologyNode(const vtkMRMLDoseMorphologyNode&);
   void operator=(const vtkMRMLDoseMorphologyNode&);
 
 protected:
-  /// Selected dose volume MRML node object ID
-  char* ReferenceDoseVolumeNodeID;
-
-  /// Selected dose volume MRML node object ID
-  char* InputDoseVolumeNodeID;
-
-  /// Selected dose volume MRML node object ID
-  char* OutputDoseVolumeNodeID;
-
   /// State of Show isodose lines checkbox
   int Operation;
 

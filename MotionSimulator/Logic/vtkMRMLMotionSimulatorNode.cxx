@@ -14,18 +14,21 @@
   limitations under the License.
 
   This file was originally developed by Kevin Wang, Radiation Medicine Program, 
-  University Health Network and was supported by Cancer Care Ontario (CCO)'s ACRU program 
-  with funds provided by the Ontario Ministry of Health and Long-Term Care
-  and Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).
+  University Health Network and was supported by 
+  Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).
 
 ==============================================================================*/
 
-// MRMLDoseAccumulation includes
+// MRML Motion Simulator includes
 #include "vtkMRMLMotionSimulatorNode.h"
+
+// SlicerRT includes
+#include "SlicerRtCommon.h"
 
 // MRML includes
 #include <vtkMRMLScene.h>
 #include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLMotionSimulatorDoubleArrayNode.h>
 
 // VTK includes
 #include <vtkObjectFactory.h>
@@ -35,14 +38,16 @@
 #include <sstream>
 
 //------------------------------------------------------------------------------
+std::string vtkMRMLMotionSimulatorNode::InputDoseVolumeReferenceRole = std::string("inputDoseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLMotionSimulatorNode::InputContourReferenceRole = std::string("inputContour") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLMotionSimulatorNode::OutputDoubleArrayReferenceRole = std::string("outputDoubleArray") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+
+//------------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLMotionSimulatorNode);
 
 //----------------------------------------------------------------------------
 vtkMRMLMotionSimulatorNode::vtkMRMLMotionSimulatorNode()
 {
-  this->InputDoseVolumeNodeID = NULL;
-  this->InputContourNodeID = NULL;
-  this->OutputDoubleArrayNodeID = NULL;
   this->NumberOfSimulation = 1;
   this->NumberOfFraction = 1;
   this->XSysSD = 1;
@@ -58,9 +63,6 @@ vtkMRMLMotionSimulatorNode::vtkMRMLMotionSimulatorNode()
 //----------------------------------------------------------------------------
 vtkMRMLMotionSimulatorNode::~vtkMRMLMotionSimulatorNode()
 {
-  this->SetInputDoseVolumeNodeID(NULL);
-  this->SetInputContourNodeID(NULL);
-  this->SetOutputDoubleArrayNodeID(NULL);
 }
 
 //----------------------------------------------------------------------------
@@ -70,33 +72,6 @@ void vtkMRMLMotionSimulatorNode::WriteXML(ostream& of, int nIndent)
 
   // Write all MRML node attributes into output stream
   vtkIndent indent(nIndent);
-
-  {
-    std::stringstream ss;
-    if ( this->InputDoseVolumeNodeID )
-      {
-      ss << this->InputDoseVolumeNodeID;
-      of << indent << " InputDoseVolumeNodeID=\"" << ss.str() << "\"";
-      }
-  }
-
-  {
-    std::stringstream ss;
-    if ( this->InputContourNodeID )
-      {
-      ss << this->InputContourNodeID;
-      of << indent << " InputContourNodeID=\"" << ss.str() << "\"";
-      }
-  }
-
-  {
-    std::stringstream ss;
-    if ( this->OutputDoubleArrayNodeID )
-      {
-      ss << this->OutputDoubleArrayNodeID;
-      of << indent << " OutputDoubleArrayNodeID=\"" << ss.str() << "\"";
-      }
-  }
 
   of << indent << " NumberOfSimulation=\"" << (this->NumberOfSimulation) << "\"";
 
@@ -129,25 +104,7 @@ void vtkMRMLMotionSimulatorNode::ReadXMLAttributes(const char** atts)
     attName = *(atts++);
     attValue = *(atts++);
 
-    if (!strcmp(attName, "InputDoseVolumeNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveInputDoseVolumeNodeID(ss.str().c_str());
-      }
-    if (!strcmp(attName, "InputContourNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveInputContourNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "OutputDoubleArrayNodeID")) 
-      {
-      std::stringstream ss;
-      ss << attValue;
-      this->SetAndObserveOutputDoubleArrayNodeID(ss.str().c_str());
-      }
-    else if (!strcmp(attName, "NumberOfSimulation")) 
+    if (!strcmp(attName, "NumberOfSimulation")) 
       {
       this->NumberOfSimulation = 
         (strcmp(attValue,"true") ? false : true);
@@ -200,10 +157,6 @@ void vtkMRMLMotionSimulatorNode::Copy(vtkMRMLNode *anode)
 
   vtkMRMLMotionSimulatorNode *node = (vtkMRMLMotionSimulatorNode *)anode;
 
-  this->SetAndObserveInputDoseVolumeNodeID(node->InputDoseVolumeNodeID);
-  this->SetAndObserveInputContourNodeID(node->InputContourNodeID);
-  this->SetAndObserveOutputDoubleArrayNodeID(node->OutputDoubleArrayNodeID);
-
   this->NumberOfSimulation = node->GetNumberOfSimulation();
   this->NumberOfFraction = node->GetNumberOfFraction();
   this->XSysSD = node->GetXSysSD();
@@ -222,9 +175,6 @@ void vtkMRMLMotionSimulatorNode::PrintSelf(ostream& os, vtkIndent indent)
 {
   vtkMRMLNode::PrintSelf(os,indent);
 
-  os << indent << "InputDoseVolumeNodeID:   " << this->InputDoseVolumeNodeID << "\n";
-  os << indent << "InputContourNodeID:   " << this->InputContourNodeID << "\n";
-  os << indent << "OutputDoubleArrayNodeID:   " << this->OutputDoubleArrayNodeID << "\n";
   os << indent << "NumberOfSimulation:   " << (this->NumberOfSimulation) << "\n";
   os << indent << "NumberOfFraction:   " << (this->NumberOfFraction) << "\n";
   os << indent << "XSysSD:   " << (this->XSysSD) << "\n";
@@ -236,66 +186,41 @@ void vtkMRMLMotionSimulatorNode::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLMotionSimulatorNode::UpdateReferenceID(const char *oldID, const char *newID)
+vtkMRMLScalarVolumeNode* vtkMRMLMotionSimulatorNode::GetInputDoseVolumeNode()
 {
-  if (this->InputDoseVolumeNodeID && !strcmp(oldID, this->InputDoseVolumeNodeID))
-    {
-    this->SetAndObserveInputDoseVolumeNodeID(newID);
-    }
-  if (this->InputContourNodeID && !strcmp(oldID, this->InputContourNodeID))
-    {
-    this->SetAndObserveInputContourNodeID(newID);
-    }
-  if (this->OutputDoubleArrayNodeID && !strcmp(oldID, this->OutputDoubleArrayNodeID))
-    {
-    this->SetAndObserveOutputDoubleArrayNodeID(newID);
-    }
+  return vtkMRMLScalarVolumeNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLMotionSimulatorNode::InputDoseVolumeReferenceRole.c_str()) );
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLMotionSimulatorNode::SetAndObserveInputDoseVolumeNodeID(const char* id)
+void vtkMRMLMotionSimulatorNode::SetAndObserveInputDoseVolumeNode(vtkMRMLScalarVolumeNode* node)
 {
-  if (this->InputDoseVolumeNodeID != NULL)
-    {
-    this->Scene->RemoveReferencedNodeID(this->InputDoseVolumeNodeID, this);
-    }
-
-  this->SetInputDoseVolumeNodeID(id);
-
-  if (id)
-    {
-    this->Scene->AddReferencedNodeID(this->InputDoseVolumeNodeID, this);
-    }
+  this->SetNodeReferenceID(vtkMRMLMotionSimulatorNode::InputDoseVolumeReferenceRole.c_str(), node->GetID());
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLMotionSimulatorNode::SetAndObserveInputContourNodeID(const char* id)
+vtkMRMLScalarVolumeNode* vtkMRMLMotionSimulatorNode::GetInputContourNode()
 {
-  if (this->InputContourNodeID != NULL)
-    {
-    this->Scene->RemoveReferencedNodeID(this->InputContourNodeID, this);
-    }
-
-  this->SetInputContourNodeID(id);
-
-  if (id)
-    {
-    this->Scene->AddReferencedNodeID(this->InputContourNodeID, this);
-    }
+  return vtkMRMLScalarVolumeNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLMotionSimulatorNode::InputContourReferenceRole.c_str()) );
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLMotionSimulatorNode::SetAndObserveOutputDoubleArrayNodeID(const char* id)
+void vtkMRMLMotionSimulatorNode::SetAndObserveInputContourNode(vtkMRMLScalarVolumeNode* node)
 {
-  if (this->OutputDoubleArrayNodeID != NULL)
-    {
-    this->Scene->RemoveReferencedNodeID(this->OutputDoubleArrayNodeID, this);
-    }
-
-  this->SetOutputDoubleArrayNodeID(id);
-
-  if (id)
-    {
-    this->Scene->AddReferencedNodeID(this->OutputDoubleArrayNodeID, this);
-    }
+  this->SetNodeReferenceID(vtkMRMLMotionSimulatorNode::InputContourReferenceRole.c_str(), node->GetID());
 }
+
+//----------------------------------------------------------------------------
+vtkMRMLMotionSimulatorDoubleArrayNode* vtkMRMLMotionSimulatorNode::GetOutputDoubleArrayNode()
+{
+  return vtkMRMLMotionSimulatorDoubleArrayNode::SafeDownCast(
+    this->GetNodeReference(vtkMRMLMotionSimulatorNode::OutputDoubleArrayReferenceRole.c_str()) );
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLMotionSimulatorNode::SetAndObserveOutputDoubleArrayNode(vtkMRMLMotionSimulatorDoubleArrayNode* node)
+{
+  this->SetNodeReferenceID(vtkMRMLMotionSimulatorNode::OutputDoubleArrayReferenceRole.c_str(), node->GetID());
+}
+

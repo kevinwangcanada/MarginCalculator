@@ -289,9 +289,9 @@ int volumeDifferenceToleranceVoxel = 0.0;
   // Create and set up parameter set MRML node
   vtkSmartPointer<vtkMRMLDoseMorphologyNode> paramNode = vtkSmartPointer<vtkMRMLDoseMorphologyNode>::New();
   mrmlScene->AddNode(paramNode);
-  paramNode->SetAndObserveReferenceDoseVolumeNodeID(referenceDoseVolumeNode->GetID());
-  paramNode->SetAndObserveInputDoseVolumeNodeID(inputDoseVolumeNode->GetID());
-  paramNode->SetAndObserveOutputDoseVolumeNodeID(outputDoseVolumeNode->GetID());
+  paramNode->SetAndObserveReferenceDoseVolumeNode(referenceDoseVolumeNode);
+  paramNode->SetAndObserveInputDoseVolumeNode(inputDoseVolumeNode);
+  paramNode->SetAndObserveOutputDoseVolumeNode(outputDoseVolumeNode);
   paramNode->SetOperation(operation);
   paramNode->SetXSize(morphologicalParameter);
   paramNode->SetYSize(morphologicalParameter);
@@ -305,7 +305,7 @@ int volumeDifferenceToleranceVoxel = 0.0;
   // Compute ContourMorphology
   doseMorphologyLogic->MorphDose();
 
-  outputDoseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(mrmlScene->GetNodeByID(paramNode->GetOutputDoseVolumeNodeID()));  
+  outputDoseVolumeNode = paramNode->GetOutputDoseVolumeNode();  
   if (outputDoseVolumeNode == NULL)
   {
     mrmlScene->Commit();

@@ -173,18 +173,18 @@ void qSlicerDoseMorphologyModuleWidget::updateWidgetFromMRML()
   if (paramNode && this->mrmlScene())
   {
     d->MRMLNodeComboBox_ParameterSet->setCurrentNode(paramNode);
-    if (paramNode->GetReferenceDoseVolumeNodeID() && strcmp(paramNode->GetReferenceDoseVolumeNodeID(),""))
+    if (paramNode->GetReferenceDoseVolumeNode())
     {
-      d->MRMLNodeComboBox_CurrentDoseVolume->setCurrentNode(paramNode->GetReferenceDoseVolumeNodeID());
+      d->MRMLNodeComboBox_CurrentDoseVolume->setCurrentNode(paramNode->GetReferenceDoseVolumeNode());
     }
     else
     {
       this->currentDoseVolumeNodeChanged(d->MRMLNodeComboBox_CurrentDoseVolume->currentNode());
     }
 
-    if (paramNode->GetInputDoseVolumeNodeID() && strcmp(paramNode->GetInputDoseVolumeNodeID(),""))
+    if (paramNode->GetInputDoseVolumeNode())
     {
-      d->MRMLNodeComboBox_SecondaryDoseVolume->setCurrentNode(paramNode->GetInputDoseVolumeNodeID());
+      d->MRMLNodeComboBox_SecondaryDoseVolume->setCurrentNode(paramNode->GetInputDoseVolumeNode());
     }
     else
     {
@@ -278,7 +278,7 @@ void qSlicerDoseMorphologyModuleWidget::currentDoseVolumeNodeChanged(vtkMRMLNode
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveReferenceDoseVolumeNodeID(node->GetID());
+  paramNode->SetAndObserveReferenceDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   this->updateButtonsState();
@@ -296,7 +296,7 @@ void qSlicerDoseMorphologyModuleWidget::secondaryDoseVolumeNodeChanged(vtkMRMLNo
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveInputDoseVolumeNodeID(node->GetID());
+  paramNode->SetAndObserveInputDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   this->updateButtonsState();
@@ -314,7 +314,7 @@ void qSlicerDoseMorphologyModuleWidget::outputDoseVolumeNodeChanged(vtkMRMLNode*
   }
 
   paramNode->DisableModifiedEventOn();
-  paramNode->SetAndObserveOutputDoseVolumeNodeID(node->GetID());
+  paramNode->SetAndObserveOutputDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
   if (d->logic()->VolumeContainsDose())
@@ -414,12 +414,9 @@ void qSlicerDoseMorphologyModuleWidget::updateButtonsState()
   }
 
   bool applyEnabled = d->logic()->GetDoseMorphologyNode()
-                   && d->logic()->GetDoseMorphologyNode()->GetReferenceDoseVolumeNodeID()
-                   && strcmp(d->logic()->GetDoseMorphologyNode()->GetReferenceDoseVolumeNodeID(), "")
-                   && d->logic()->GetDoseMorphologyNode()->GetInputDoseVolumeNodeID()
-                   && strcmp(d->logic()->GetDoseMorphologyNode()->GetInputDoseVolumeNodeID(), "")
-                   && d->logic()->GetDoseMorphologyNode()->GetOutputDoseVolumeNodeID()
-                   && strcmp(d->logic()->GetDoseMorphologyNode()->GetOutputDoseVolumeNodeID(), "");
+                   && d->logic()->GetDoseMorphologyNode()->GetReferenceDoseVolumeNode()
+                   && d->logic()->GetDoseMorphologyNode()->GetInputDoseVolumeNode()
+                   && d->logic()->GetDoseMorphologyNode()->GetOutputDoseVolumeNode();
   d->pushButton_Apply->setEnabled(applyEnabled);
 }
 
