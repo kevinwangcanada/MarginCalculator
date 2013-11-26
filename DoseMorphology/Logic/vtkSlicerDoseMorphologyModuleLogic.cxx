@@ -28,7 +28,7 @@
 #include "SlicerRtCommon.h"
 
 // MRML includes
-#include <vtkMRMLContourNode.h>
+//#include <vtkMRMLContourNode.h>
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLVolumeDisplayNode.h>
 #include <vtkMRMLModelHierarchyNode.h>
@@ -36,6 +36,7 @@
 #include <vtkMRMLModelDisplayNode.h>
 #include <vtkMRMLScalarVolumeDisplayNode.h>
 #include <vtkMRMLSelectionNode.h>
+#include <vtkMRMLTransformNode.h>
 
 // VTK includes
 #include <vtkNew.h>
@@ -56,6 +57,7 @@
 #include <vtkImageAccumulate.h>
 #include <vtkImageReslice.h>
 #include <vtkGeneralTransform.h>
+#include <vtkTransform.h>
 
 // STD includes
 #include <cassert>

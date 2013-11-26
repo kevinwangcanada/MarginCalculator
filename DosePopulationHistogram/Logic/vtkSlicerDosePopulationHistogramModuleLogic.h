@@ -45,7 +45,7 @@ class vtkImageData;
 class vtkImageStencilData;
 class vtkMRMLDoubleArrayNode;
 class vtkMRMLScalarVolumeNode;
-class vtkMRMLContourNode;
+//class vtkMRMLContourNode;
 class vtkMRMLModelNode;
 class vtkMRMLChartViewNode;
 class vtkMRMLDosePopulationHistogramNode;
@@ -107,7 +107,8 @@ protected:
 
   ///
   void GetStencilForContour( vtkMRMLScalarVolumeNode* volumeNode,
-                             vtkMRMLContourNode* structureContourNode, 
+                             //vtkMRMLContourNode* structureContourNode, 
+                             vtkMRMLScalarVolumeNode* structureContourNode, 
                              vtkImageData* resampledDoseVolume, 
                              vtkImageStencilData* structureStencil );
 

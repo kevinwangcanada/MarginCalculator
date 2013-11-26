@@ -33,7 +33,7 @@
 
 // MRML includes
 #include <vtkMRMLScalarVolumeNode.h>
-#include <vtkMRMLContourNode.h>
+//#include <vtkMRMLContourNode.h>
 #include <vtkMRMLMotionSimulatorDoubleArrayNode.h>
 
 // VTK includes

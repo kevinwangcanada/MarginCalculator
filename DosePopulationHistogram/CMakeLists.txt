@@ -11,7 +11,6 @@ add_subdirectory(Logic)
 set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
 
 set(MODULE_INCLUDE_DIRECTORIES
-  ${vtkSlicerContoursModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerMotionSimulatorDoubleArrayModuleMRML_INCLUDE_DIRS}
   ${SlicerRtCommon_INCLUDE_DIRS}
   )

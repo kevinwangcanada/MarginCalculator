@@ -26,6 +26,7 @@
 
 // SlicerRT includes
 #include "SlicerRtCommon.h"
+
 #include "vtkMRMLMotionSimulatorDoubleArrayNode.h"
 
 // MRML includes
@@ -36,7 +37,7 @@
 #include <vtkMRMLDoubleArrayNode.h>
 #include <vtkMRMLTransformNode.h>
 #include <vtkMRMLModelDisplayNode.h>
-#include <vtkMRMLContourNode.h>
+//#include <vtkMRMLContourNode.h>
 #include <vtkMRMLColorTableNode.h>
 
 // VTK includes
@@ -50,6 +51,7 @@
 #include <vtkStringArray.h>
 #include <vtkPiecewiseFunction.h>
 #include <vtkImageResample.h>
+#include <vtkImageData.h>
 
 // VTKSYS includes
 #include <vtksys/SystemTools.hxx>
@@ -124,8 +126,9 @@ void vtkSlicerDosePopulationHistogramModuleLogic::RegisterNodes()
 //---------------------------------------------------------------------------
 void vtkSlicerDosePopulationHistogramModuleLogic::RefreshDPHDoubleArrayNodesFromScene()
 {
-  if (!this->DosePopulationHistogramNode)
+  if (!this->GetMRMLScene() || !this->DosePopulationHistogramNode)
   {
+    vtkErrorMacro("RefreshDPHDoubleArrayNodesFromScene: Invalid MRML scene or parameter set node!");
     return;
   }
   this->DosePopulationHistogramNode->GetDPHDoubleArrayNodeIDs()->clear();
@@ -142,8 +145,8 @@ void vtkSlicerDosePopulationHistogramModuleLogic::RefreshDPHDoubleArrayNodesFrom
     vtkMRMLDoubleArrayNode* doubleArrayNode = vtkMRMLDoubleArrayNode::SafeDownCast(node);
     if (doubleArrayNode)
     {
-      const char* type = doubleArrayNode->GetAttribute(SlicerRtCommon::DVH_TYPE_ATTRIBUTE_NAME.c_str());
-      if (type != NULL && strcmp(type, SlicerRtCommon::DVH_TYPE_ATTRIBUTE_VALUE.c_str()) == 0)
+      const char* type = doubleArrayNode->GetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str());
+      if (type)
       {
         this->DosePopulationHistogramNode->GetDPHDoubleArrayNodeIDs()->push_back(doubleArrayNode->GetID());
       }
@@ -182,8 +185,8 @@ void vtkSlicerDosePopulationHistogramModuleLogic::OnMRMLSceneNodeAdded(vtkMRMLNo
     vtkMRMLDoubleArrayNode* doubleArrayNode = vtkMRMLDoubleArrayNode::SafeDownCast(node);
     if (doubleArrayNode)
     {
-      const char* type = doubleArrayNode->GetAttribute(SlicerRtCommon::DVH_TYPE_ATTRIBUTE_NAME.c_str());
-      if (type != NULL && strcmp(type, SlicerRtCommon::DVH_TYPE_ATTRIBUTE_VALUE.c_str()) == 0)
+      const char* type = doubleArrayNode->GetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str());
+      if (type)
       {
         this->DosePopulationHistogramNode->GetDPHDoubleArrayNodeIDs()->push_back(doubleArrayNode->GetID());
       }
@@ -252,7 +255,8 @@ void vtkSlicerDosePopulationHistogramModuleLogic::OnMRMLSceneEndClose()
 
 //---------------------------------------------------------------------------
 void vtkSlicerDosePopulationHistogramModuleLogic::GetStencilForContour(vtkMRMLScalarVolumeNode* volumeNode,
-                                                         vtkMRMLContourNode* structureContourNode, 
+                                                         //vtkMRMLContourNode* structureContourNode, 
+                                                         vtkMRMLScalarVolumeNode* structureContourNode, 
                                                          vtkImageData* resampledDoseVolume, 
                                                          vtkImageStencilData* structureStencil )
 {
@@ -262,31 +266,32 @@ void vtkSlicerDosePopulationHistogramModuleLogic::GetStencilForContour(vtkMRMLSc
   }
 
   // Get indexed labelmap representation (convert if does not exist yet)
-  vtkMRMLScalarVolumeNode* indexedLabelmapNode = structureContourNode->GetIndexedLabelmapVolumeNode();
-  if (!indexedLabelmapNode)
+  //vtkMRMLScalarVolumeNode* indexedLabelmapNode = structureContourNode->GetIndexedLabelmapVolumeNode();
+  if (!structureContourNode)
   {
     vtkErrorMacro("Failed to get indexed labelmap representation from contour node '" << structureContourNode->GetName() << "' !");
     return;
   }
 
-  vtkImageData* indexedLabelmap = indexedLabelmapNode->GetImageData();
+  vtkImageData* indexedLabelmap = structureContourNode->GetImageData();
 
-  double rasterizationDownsamplingFactor = structureContourNode->GetRasterizationOversamplingFactor();
-  if (rasterizationDownsamplingFactor != 1.0)
-  {
-    vtkSmartPointer<vtkImageResample> resampler = vtkSmartPointer<vtkImageResample>::New();
-    resampler->SetInput(volumeNode->GetImageData());
-    resampler->SetAxisMagnificationFactor(0, rasterizationDownsamplingFactor);
-    resampler->SetAxisMagnificationFactor(1, rasterizationDownsamplingFactor);
-    resampler->SetAxisMagnificationFactor(2, rasterizationDownsamplingFactor);
-    resampler->Update();
+  //double rasterizationDownsamplingFactor = structureContourNode->GetRasterizationOversamplingFactor();
+  //if (rasterizationDownsamplingFactor != 1.0)
+  //{
+  //  vtkSmartPointer<vtkImageResample> resampler = vtkSmartPointer<vtkImageResample>::New();
+  //  resampler->SetInput(volumeNode->GetImageData());
+  //  resampler->SetAxisMagnificationFactor(0, rasterizationDownsamplingFactor);
+  //  resampler->SetAxisMagnificationFactor(1, rasterizationDownsamplingFactor);
+  //  resampler->SetAxisMagnificationFactor(2, rasterizationDownsamplingFactor);
+  //  resampler->Update();
 
-    resampledDoseVolume->DeepCopy(resampler->GetOutput());
-  }
-  else
-  {
-    resampledDoseVolume->DeepCopy(volumeNode->GetImageData());
-  }
+  //  resampledDoseVolume->DeepCopy(resampler->GetOutput());
+  //}
+  //else
+  //{
+  //  resampledDoseVolume->DeepCopy(volumeNode->GetImageData());
+  //}
+  resampledDoseVolume->DeepCopy(volumeNode->GetImageData());
 
   // Sanity check
   int resampledDoseDimensions[3];
@@ -322,7 +327,9 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
     this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetDoubleArrayNodeID()));
   vtkMRMLScalarVolumeNode* doseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(
     this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetDoseVolumeNodeID()));
-  vtkMRMLContourNode* contourNode = vtkMRMLContourNode::SafeDownCast(
+  //vtkMRMLContourNode* contourNode = vtkMRMLContourNode::SafeDownCast(
+  //  this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetContourNodeID()));
+  vtkMRMLScalarVolumeNode* contourNode = vtkMRMLScalarVolumeNode::SafeDownCast(
     this->GetMRMLScene()->GetNodeByID(this->DosePopulationHistogramNode->GetContourNodeID()));
   // Make sure inputs are initialized
   if (!doseVolumeNode || !contourNode || !doubleArrayNode)
@@ -457,7 +464,7 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
   arrayNode->SetName(DPHArrayNodeName.c_str());
   //arrayNode->HideFromEditorsOff();
 
-  arrayNode->SetAttribute(SlicerRtCommon::DVH_TYPE_ATTRIBUTE_NAME.c_str(), SlicerRtCommon::DVH_TYPE_ATTRIBUTE_VALUE.c_str());
+  arrayNode->SetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
 
   vtkDoubleArray* doubleArray = arrayNode->GetArray();
   bool insertPointAtOrigin=true;

@@ -37,7 +37,7 @@
 #include <vtkMRMLColorTableNode.h>
 #include <vtkMRMLProceduralColorNode.h>
 #include <vtkMRMLMotionSimulatorDoubleArrayNode.h>
-#include <vtkMRMLContourNode.h>
+//#include <vtkMRMLContourNode.h>
 #include <vtkMRMLMotionSimulatorNode.h>
 
 // VTK includes
@@ -148,8 +148,10 @@ void vtkSlicerMotionSimulatorModuleLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node
     return;
   }
 
+  //if (node->IsA("vtkMRMLScalarVolumeNode") || node->IsA("vtkMRMLMotionSimulatorDoubleArrayNode") 
+  //    || node->IsA("vtkMRMLContourNode") || node->IsA("vtkMRMLMotionSimulatorNode") )
   if (node->IsA("vtkMRMLScalarVolumeNode") || node->IsA("vtkMRMLMotionSimulatorDoubleArrayNode") 
-      || node->IsA("vtkMRMLContourNode") || node->IsA("vtkMRMLMotionSimulatorNode") )
+      || node->IsA("vtkMRMLMotionSimulatorNode") )
   {
     this->Modified();
   }
@@ -169,8 +171,10 @@ void vtkSlicerMotionSimulatorModuleLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* no
     return;
   }
 
+  //if (node->IsA("vtkMRMLScalarVolumeNode") || node->IsA("vtkMRMLMotionSimulatorDoubleArrayNode") 
+  //    || node->IsA("vtkMRMLContourNode") || node->IsA("vtkMRMLMotionSimulatorNode"))
   if (node->IsA("vtkMRMLScalarVolumeNode") || node->IsA("vtkMRMLMotionSimulatorDoubleArrayNode") 
-      || node->IsA("vtkMRMLContourNode") || node->IsA("vtkMRMLMotionSimulatorNode"))
+      || node->IsA("vtkMRMLMotionSimulatorNode"))
   {
     this->Modified();
   }
@@ -218,7 +222,8 @@ bool vtkSlicerMotionSimulatorModuleLogic::DoseVolumeContainsDose()
 
 //---------------------------------------------------------------------------
 void vtkSlicerMotionSimulatorModuleLogic::GetStencilForContour(vtkMRMLScalarVolumeNode* volumeNode,
-                                                         vtkMRMLContourNode* structureContourNode, 
+                                                         //vtkMRMLContourNode* structureContourNode, 
+                                                         vtkMRMLScalarVolumeNode* structureContourNode, 
                                                          vtkImageData* resampledDoseVolume, 
                                                          vtkImageStencilData* structureStencil )
 {
@@ -228,31 +233,32 @@ void vtkSlicerMotionSimulatorModuleLogic::GetStencilForContour(vtkMRMLScalarVolu
   }
 
   // Get indexed labelmap representation (convert if does not exist yet)
-  vtkMRMLScalarVolumeNode* indexedLabelmapNode = structureContourNode->GetIndexedLabelmapVolumeNode();
-  if (!indexedLabelmapNode)
+  // vtkMRMLScalarVolumeNode* indexedLabelmapNode = structureContourNode->GetIndexedLabelmapVolumeNode();
+  if (!structureContourNode)
   {
     vtkErrorMacro("Failed to get indexed labelmap representation from contour node '" << structureContourNode->GetName() << "' !");
     return;
   }
 
-  vtkImageData* indexedLabelmap = indexedLabelmapNode->GetImageData();
+  vtkImageData* indexedLabelmap = structureContourNode->GetImageData();
 
-  double rasterizationDownsamplingFactor = structureContourNode->GetRasterizationOversamplingFactor();
-  if (rasterizationDownsamplingFactor != 1.0)
-  {
-    vtkSmartPointer<vtkImageResample> resampler = vtkSmartPointer<vtkImageResample>::New();
-    resampler->SetInput(volumeNode->GetImageData());
-    resampler->SetAxisMagnificationFactor(0, rasterizationDownsamplingFactor);
-    resampler->SetAxisMagnificationFactor(1, rasterizationDownsamplingFactor);
-    resampler->SetAxisMagnificationFactor(2, rasterizationDownsamplingFactor);
-    resampler->Update();
+  //double rasterizationDownsamplingFactor = structureContourNode->GetRasterizationOversamplingFactor();
+  //if (rasterizationDownsamplingFactor != 1.0)
+  //{
+  //  vtkSmartPointer<vtkImageResample> resampler = vtkSmartPointer<vtkImageResample>::New();
+  //  resampler->SetInput(volumeNode->GetImageData());
+  //  resampler->SetAxisMagnificationFactor(0, rasterizationDownsamplingFactor);
+  //  resampler->SetAxisMagnificationFactor(1, rasterizationDownsamplingFactor);
+  //  resampler->SetAxisMagnificationFactor(2, rasterizationDownsamplingFactor);
+  //  resampler->Update();
 
-    resampledDoseVolume->DeepCopy(resampler->GetOutput());
-  }
-  else
-  {
-    resampledDoseVolume->DeepCopy(volumeNode->GetImageData());
-  }
+  //  resampledDoseVolume->DeepCopy(resampler->GetOutput());
+  //}
+  //else
+  //{
+  //  resampledDoseVolume->DeepCopy(volumeNode->GetImageData());
+  //}
+  resampledDoseVolume->DeepCopy(volumeNode->GetImageData());
 
   // Sanity check
   int resampledDoseDimensions[3];
@@ -281,7 +287,9 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
 {
   vtkMRMLScalarVolumeNode* doseVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(
     this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetInputDoseVolumeNodeID()));
-  vtkMRMLContourNode* contourNode = vtkMRMLContourNode::SafeDownCast(
+  //vtkMRMLContourNode* contourNode = vtkMRMLContourNode::SafeDownCast(
+  //  this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetInputContourNodeID()));
+  vtkMRMLScalarVolumeNode* contourNode = vtkMRMLScalarVolumeNode::SafeDownCast(
     this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetInputContourNodeID()));
   vtkMRMLMotionSimulatorDoubleArrayNode* outputArrayNode = vtkMRMLMotionSimulatorDoubleArrayNode::SafeDownCast(
     this->GetMRMLScene()->GetNodeByID(this->MotionSimulatorNode->GetOutputDoubleArrayNodeID()));
@@ -324,7 +332,8 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   numSamples = (int)ceil( (maxDose-startValue)/stepSize ) + 1;
 
   // Get dose grid scaling and dose units
-  std::string structureName(contourNode->GetStructureName());
+  //std::string structureName(contourNode->GetStructureName());
+  std::string structureName(contourNode->GetName());
 
   vtkSmartPointer<vtkMRMLScalarVolumeNode> structureStenciledDoseVolumeNode
     = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
@@ -357,10 +366,11 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   //arrayNode->SetName(dvhArrayNodeName.c_str());
   //arrayNode->HideFromEditorsOff();
 
-  outputArrayNode->SetAttribute(SlicerRtCommon::DVH_TYPE_ATTRIBUTE_NAME.c_str(), SlicerRtCommon::DVH_TYPE_ATTRIBUTE_VALUE.c_str());
-  outputArrayNode->SetAttribute(SlicerRtCommon::DVH_DOSE_VOLUME_NODE_ID_ATTRIBUTE_NAME.c_str(), doseVolumeNode->GetID());
+  //outputArrayNode->SetAttribute(SlicerRtCommon::DVH_TYPE_ATTRIBUTE_NAME.c_str(), SlicerRtCommon::DVH_TYPE_ATTRIBUTE_VALUE.c_str());
+  //outputArrayNode->SetAttribute(SlicerRtCommon::DVH_DOSE_VOLUME_NODE_ID_ATTRIBUTE_NAME.c_str(), doseVolumeNode->GetID());
+  outputArrayNode->SetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
   outputArrayNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_NAME_ATTRIBUTE_NAME.c_str(), structureName.c_str());
-  outputArrayNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_CONTOUR_NODE_ID_ATTRIBUTE_NAME.c_str(), contourNode->GetID());
+  //outputArrayNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_CONTOUR_NODE_ID_ATTRIBUTE_NAME.c_str(), contourNode->GetID());
 
   vtkDoubleArray* doubleArray = outputArrayNode->GetArray();
   doubleArray->SetNumberOfTuples(this->MotionSimulatorNode->GetNumberOfSimulation());

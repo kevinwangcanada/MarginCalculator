@@ -40,7 +40,7 @@
 #include "vtkSlicerMotionSimulatorModuleLogicExport.h"
 
 class vtkMRMLScalarVolumeNode;
-class vtkMRMLContourNode;
+//class vtkMRMLContourNode;
 class vtkMRMLDoubleArrayListNode;
 class vtkMRMLMotionSimulatorNode;
 class vtkImageData;
@@ -94,7 +94,8 @@ protected:
 
   ///
   void GetStencilForContour( vtkMRMLScalarVolumeNode* volumeNode,
-                             vtkMRMLContourNode* structureContourNode, 
+                             //vtkMRMLContourNode* structureContourNode, 
+                             vtkMRMLScalarVolumeNode* structureContourNode, 
                              vtkImageData* resampledDoseVolume, 
                              vtkImageStencilData* structureStencil );
 

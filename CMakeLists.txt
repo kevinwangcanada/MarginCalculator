@@ -26,15 +26,15 @@ find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 
 #-----------------------------------------------------------------------------
-FIND_PACKAGE(SlicerRT REQUIRED)
-INCLUDE(${SlicerRT_USE_FILE})
+#FIND_PACKAGE(SlicerRT REQUIRED)
+#INCLUDE(${SlicerRT_USE_FILE})
 
 #-----------------------------------------------------------------------------
 OPTION(MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES "Enable the building of work-in-progress, experimental modules." ON)
 mark_as_advanced(MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES)
 
-#add_subdirectory(SlicerRTCommon)
-#add_subdirectory(Contours)
+add_subdirectory(SlicerRtCommon)
+
 add_subdirectory(MotionSimulatorDoubleArray)
 add_subdirectory(MotionSimulator)
 add_subdirectory(DosePopulationHistogram)
