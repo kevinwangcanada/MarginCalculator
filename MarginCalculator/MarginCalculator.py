@@ -35,8 +35,14 @@ class MarginCalculatorWidget:
       self.parent.setMRMLScene(slicer.mrmlScene)
     else:
       self.parent = parent
-    self.logic = None
     self.layout = self.parent.layout()
+    self.logic = None
+    self.fileDialog = None
+    self.numberOfSimulations = 100
+    self.numberOfFractions = 1
+    self.systematicErrorRange = 0.5
+    self.randomErrorRange = 0.5
+    self.ROIRadius = 10
     if not parent:
       self.setup()
       self.parent.show()
@@ -101,9 +107,10 @@ class MarginCalculatorWidget:
     self.marginCalculationFormLayout.addRow(self.referenceDoseVolumeSelectorLabel, self.referenceDoseVolumeSelector)
 
     # Input Contour selector
-    self.inputContourSelectorLabel = qt.QLabel('Input Contour:')
+    self.inputContourSelectorLabel = qt.QLabel('Input Contour Labelmap:')
     self.inputContourSelector = slicer.qMRMLNodeComboBox()
-    self.inputContourSelector.nodeTypes = ['vtkMRMLContourNode']
+    self.inputContourSelector.nodeTypes = ['vtkMRMLScalarVolumeNode']
+    self.inputContourSelector.addAttribute( "vtkMRMLScalarVolumeNode", "LabelMap", 1 )
     self.inputContourSelector.noneEnabled = False
     self.inputContourSelector.addEnabled = False
     self.inputContourSelector.removeEnabled = False
@@ -111,11 +118,34 @@ class MarginCalculatorWidget:
     self.inputContourSelector.setToolTip( "Set the input Contour" )
     self.marginCalculationFormLayout.addRow(self.inputContourSelectorLabel, self.inputContourSelector)
 
+    # Number of simulations
+    self.numberOfSimulationsSlider = ctk.ctkSliderWidget()
+    self.numberOfSimulationsSlider.decimals = 0
+    self.numberOfSimulationsSlider.minimum = 0
+    self.numberOfSimulationsSlider.maximum = 2000
+    self.numberOfSimulationsSlider.singleStep = 1
+    self.numberOfSimulationsSlider.pageStep = 100
+    self.numberOfSimulationsSlider.value = 100
+    self.marginCalculationFormLayout.addRow("Number of Simulations: ", self.numberOfSimulationsSlider)
+
+    # Number of fractions
+    self.numberOfFractionsSlider = ctk.ctkSliderWidget()
+    self.numberOfFractionsSlider.decimals = 0
+    self.numberOfFractionsSlider.minimum = 0
+    self.numberOfFractionsSlider.maximum = 10
+    self.numberOfFractionsSlider.singleStep = 1
+    self.numberOfFractionsSlider.pageStep = 5
+    self.numberOfFractionsSlider.value = 1
+    self.marginCalculationFormLayout.addRow("Number of Fractions: ", self.numberOfFractionsSlider)
+
     # Systematic error slider
     self.systematicErrorRangeSlider = ctk.ctkSliderWidget()
     self.systematicErrorRangeSlider.decimals = 1
     self.systematicErrorRangeSlider.minimum = 0
     self.systematicErrorRangeSlider.maximum = 5
+    self.systematicErrorRangeSlider.singleStep = 0.1
+    self.systematicErrorRangeSlider.pageStep = 1.0
+    self.systematicErrorRangeSlider.value = 0.5
     self.marginCalculationFormLayout.addRow("Systematic Error Range (mm): ", self.systematicErrorRangeSlider)
 
     # Random error slider
@@ -123,6 +153,9 @@ class MarginCalculatorWidget:
     self.randomErrorRangeSlider.decimals = 1
     self.randomErrorRangeSlider.minimum = 0
     self.randomErrorRangeSlider.maximum = 5
+    self.randomErrorRangeSlider.singleStep = 0.1
+    self.randomErrorRangeSlider.pageStep = 1.0
+    self.randomErrorRangeSlider.value = 0.5
     self.marginCalculationFormLayout.addRow("Random Error Range (mm): ", self.randomErrorRangeSlider)
 
     # ROI radius slider
@@ -130,6 +163,9 @@ class MarginCalculatorWidget:
     self.ROIRadiusSlider.decimals = 1
     self.ROIRadiusSlider.minimum = 0
     self.ROIRadiusSlider.maximum = 50
+    self.ROIRadiusSlider.singleStep = 0.1
+    self.ROIRadiusSlider.pageStep = 2.0
+    self.ROIRadiusSlider.value = 10
     self.marginCalculationFormLayout.addRow("ROI Radius (mm): ", self.ROIRadiusSlider)
 
     # Apply button
@@ -139,9 +175,13 @@ class MarginCalculatorWidget:
     self.UpdateApplyButtonState()
 
     # model and view for stats table
-    self.tableview = qt.QTableView()
-    self.tableview.sortingEnabled = False
-    self.marginCalculationFormLayout.addRow(self.tableview)
+    self.tableWidget = qt.QTableWidget()
+    self.items = []
+    self.tableWidget.sortingEnabled = False
+    self.tableWidget.setRowCount(0)
+    self.tableWidget.setColumnCount(5)
+    self.tableWidget.setHorizontalHeaderLabels(['Systematic','Random','P90','P95','P99'])
+    self.marginCalculationFormLayout.addRow(self.tableWidget)
 
     # Save button
     self.saveButton = qt.QPushButton("Save Result")
@@ -158,6 +198,8 @@ class MarginCalculatorWidget:
     self.inputDoseVolumeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onInputDoseVolumeSelect)
     self.referenceDoseVolumeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onReferenceDoseVolumeSelect)
     self.inputContourSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onInputContourSelect)
+    self.numberOfSimulationsSlider.connect('valueChanged(double)', self.onNumberOfSimulationsChanged)
+    self.numberOfFractionsSlider.connect('valueChanged(double)', self.onNumberOfFractionsChanged)
     self.systematicErrorRangeSlider.connect('valueChanged(double)', self.onSystematicErrorRangeChanged)
     self.randomErrorRangeSlider.connect('valueChanged(double)', self.onRandomErrorRangeChanged)
     self.ROIRadiusSlider.connect('valueChanged(double)', self.onROIRadiusChanged)
@@ -177,6 +219,12 @@ class MarginCalculatorWidget:
   def onInputContourSelect(self, node):
     self.UpdateApplyButtonState()
 
+  def onNumberOfSimulationsChanged(self, value):
+    self.numberOfSimulations = value
+
+  def onNumberOfFractionsChanged(self, value):
+    self.numberOfFractions = value
+
   def onSystematicErrorRangeChanged(self, value):
     self.systematicErrorRange = value
 
@@ -187,12 +235,43 @@ class MarginCalculatorWidget:
     self.ROIRadius = value
 
   def onApply(self):
-    #self.applyButton.text = "Working..."
+    self.applyButton.text = "Working..."
     self.applyButton.repaint()
     slicer.app.processEvents()
     self.logic = MarginCalculatorLogic()
-    self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.referenceDoseVolumeSelector.currentNode(), self.inputContourSelector.currentNode(), self.systematicErrorRange, self.randomErrorRange, self.ROIRadius)
-    #self.applyButton.text = "Apply"
+    self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.referenceDoseVolumeSelector.currentNode(), self.inputContourSelector.currentNode(), self.numberOfSimulations, self.numberOfFractions, self.systematicErrorRange, self.randomErrorRange, self.ROIRadius)
+    self.applyButton.text = "Calculate"
+
+    marginResult = self.logic.getMarginResult()
+    print marginResult
+    if marginResult:
+      self.saveButton.enabled = True
+    numberOfRows = len(marginResult)
+    self.tableWidget.clearContents()
+    self.items = []
+    self.tableWidget.setRowCount(numberOfRows)
+    for i in range(numberOfRows):
+      #print "item:", self.inputVolumeNodes[i][0]
+      item = qt.QTableWidgetItem()
+      item.setText(str(marginResult[i][0]))
+      self.tableWidget.setItem(i, 0, item )
+      item2 = qt.QTableWidgetItem()
+      item2.setText(str(marginResult[i][1]))
+      self.tableWidget.setItem(i, 1, item2 )
+      item3 = qt.QTableWidgetItem()
+      item3.setText(str(marginResult[i][2]))
+      self.tableWidget.setItem(i, 2, item3 )
+      item4 = qt.QTableWidgetItem()
+      item4.setText(str(marginResult[i][3]))
+      self.tableWidget.setItem(i, 3, item4 )
+      item5 = qt.QTableWidgetItem()
+      item5.setText(str(marginResult[i][4]))
+      self.tableWidget.setItem(i, 4, item5 )
+      self.items.append(item)
+      self.items.append(item2)
+      self.items.append(item3)
+      self.items.append(item4)
+      self.items.append(item5)
 
   def onSave(self):
     """save the margin calculation 
@@ -270,16 +349,17 @@ class MarginCalculatorLogic:
   Results are stored as 'statistics' instance variable.
   """
   def __init__(self):
-    pass
-  
-  def run(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, systematicErrorRange, randomErrorRange, ROIRadius):
+    self.__marginResult = []
+
+  def getMarginResult(self):
+    return self.__marginResult
+
+  def run(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systematicErrorRange, randomErrorRange, ROIRadius):
     radius = ROIRadius
-    systematicErrorRange = systematicErrorRange*10
-    randomErrorRange = randomErrorRange*10
-    
-    marginResult = []
-    
-    for i in range(1,SystematicErrorRange): # systemaic error
+    systematicErrorRange = int(systematicErrorRange*10)
+    randomErrorRange = int(randomErrorRange*10)
+    self.__marginResult = []
+    for i in range(1,systematicErrorRange): # systemaic error
       systemError = i/10.0
       for j in range(1,randomErrorRange): # random error
         randomError = j/10.0
@@ -291,7 +371,7 @@ class MarginCalculatorLogic:
         for k in range(1,20,2): # dose growing
           doseGrowSize = (k/10.0 + radius)/radius
           # print systemError, randomError, doseGrowSize
-          D95 = self.computeDPH(inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, systemError, randomError, doseGrowSize)
+          D95 = self.computeDPH(inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSize)
           #print "D95", D95
           if D95old < 0.90 and D95 >= 0.90 :
             #print "inside p90", k
@@ -304,7 +384,7 @@ class MarginCalculatorLogic:
             P99 = k/10.0
           D95old = D95
         print "sys, rad, P90, P95, P99:", systemError, randomError, P90, P95, P99
-        marginResult.append([systemError, randomError, P90, P95, P99])
+        self.__marginResult.append([systemError, randomError, P90, P95, P99])
         
   
   def marginAsCSV(self):
@@ -312,22 +392,22 @@ class MarginCalculatorLogic:
     print comma separated value file with header keys in quotes
     """
     csv = ""
-    header = ""
+    header = "Systematic error, Random Error, P90, P95, P99\n"
     csv = header
-    for i in len(self.marginResult):
+    for i in range(len(self.__marginResult)):
       line = ""
-      for k in len(self.marginResult[i]):
-        line += str(self.marginResult[i,k]) + ","
+      for k in range(len(self.__marginResult[i])):
+        line += str(self.__marginResult[i][k]) + ","
       line += "\n"
       csv += line
     return csv
 
   def saveMarginCalculation(self, filename):
-    fp = open(fileName, "w")
+    fp = open(filename, "w")
     fp.write(self.marginAsCSV())
     fp.close()
   
-  def computeDPH(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, systemError, randomError, doseGrowSize):
+  def computeDPH(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSize):
     # Step 1: morph dose
     outputDoseVolumeNode = slicer.vtkMRMLScalarVolumeNode()
     slicer.mrmlScene.AddNode(outputDoseVolumeNode)
@@ -336,9 +416,9 @@ class MarginCalculatorLogic:
     doseMorphologyNode = vtkMRMLDoseMorphologyNode()
     slicer.mrmlScene.AddNode(doseMorphologyNode)
     
-    doseMorphologyNode.SetAndObserveInputDoseVolumeNodeID(inputDoseVolumeNode.GetID())
-    doseMorphologyNode.SetAndObserveReferenceDoseVolumeNodeID(referenceDoseVolumeNode.GetID())
-    doseMorphologyNode.SetAndObserveOutputDoseVolumeNodeID(outputDoseVolumeNode.GetID())
+    doseMorphologyNode.SetAndObserveInputDoseVolumeNode(inputDoseVolumeNode)
+    doseMorphologyNode.SetAndObserveReferenceDoseVolumeNode(referenceDoseVolumeNode)
+    doseMorphologyNode.SetAndObserveOutputDoseVolumeNode(outputDoseVolumeNode)
     doseMorphologyNode.SetOperationToExpandByScaling()
     doseMorphologyNode.SetXSize(doseGrowSize)
     doseMorphologyNode.SetYSize(doseGrowSize)
@@ -351,10 +431,10 @@ class MarginCalculatorLogic:
     # print "finished step1"
     
     # Step 2: simulate patient motion
-    # first convert ribbon model to labelmap
-    inputContourNode.SetAndObserveRasterizationReferenceVolumeNodeId(referenceDoseVolumeNode.GetID())
-    inputContourNode.SetRasterizationOversamplingFactor(1.0)
-    tempLabelmapNode = inputContourNode.GetIndexedLabelmapVolumeNode()
+    # #first convert ribbon model to labelmap
+    # inputContourNode.SetAndObserveRasterizationReferenceVolumeNodeId(referenceDoseVolumeNode.GetID())
+    # inputContourNode.SetRasterizationOversamplingFactor(1.0)
+    # tempLabelmapNode = inputContourNode.GetIndexedLabelmapVolumeNode()
     
     from vtkSlicerMotionSimulatorDoubleArrayModuleMRML import vtkMRMLMotionSimulatorDoubleArrayNode
     motionSimulatorDoubleArrayNode = vtkMRMLMotionSimulatorDoubleArrayNode()
@@ -364,11 +444,11 @@ class MarginCalculatorLogic:
     motionSimulatorNode = vtkMRMLMotionSimulatorNode()
     slicer.mrmlScene.AddNode(motionSimulatorNode)
     
-    motionSimulatorNode.SetAndObserveInputDoseVolumeNodeID(outputDoseVolumeNode.GetID())
-    motionSimulatorNode.SetAndObserveInputContourNodeID(inputContourNode.GetID())
-    motionSimulatorNode.SetAndObserveOutputDoubleArrayNodeID(motionSimulatorDoubleArrayNode.GetID())
-    motionSimulatorNode.SetNumberOfSimulation(1000)
-    motionSimulatorNode.SetNumberOfFraction(1)
+    motionSimulatorNode.SetAndObserveInputDoseVolumeNode(outputDoseVolumeNode)
+    motionSimulatorNode.SetAndObserveInputContourNode(inputContourNode)
+    motionSimulatorNode.SetAndObserveOutputDoubleArrayNode(motionSimulatorDoubleArrayNode)
+    motionSimulatorNode.SetNumberOfSimulation(numberOfSimulations)
+    motionSimulatorNode.SetNumberOfFraction(numberOfFractions)
     motionSimulatorNode.SetXSysSD(systemError)
     motionSimulatorNode.SetYSysSD(systemError)
     motionSimulatorNode.SetZSysSD(systemError)
@@ -391,10 +471,10 @@ class MarginCalculatorLogic:
     outputDoubleArrayNode = slicer.vtkMRMLDoubleArrayNode()
     slicer.mrmlScene.AddNode(outputDoubleArrayNode)
     
-    dosePopulationHistogramNode.SetAndObserveDoubleArrayNodeID(motionSimulatorDoubleArrayNode.GetID())
-    dosePopulationHistogramNode.SetAndObserveDoseVolumeNodeID(outputDoseVolumeNode.GetID())
-    dosePopulationHistogramNode.SetAndObserveContourNodeID(inputContourNode.GetID())
-    dosePopulationHistogramNode.SetAndObserveOutputDoubleArrayNodeID(outputDoubleArrayNode.GetID())
+    dosePopulationHistogramNode.SetAndObserveDoubleArrayNode(motionSimulatorDoubleArrayNode)
+    dosePopulationHistogramNode.SetAndObserveDoseVolumeNode(outputDoseVolumeNode)
+    dosePopulationHistogramNode.SetAndObserveContourNode(inputContourNode)
+    dosePopulationHistogramNode.SetAndObserveOutputDoubleArrayNode(outputDoubleArrayNode)
     dosePopulationHistogramNode.SetUseDoseOptionToD98()
     
     dosePopulationHistogramLogic = slicer.modules.dosepopulationhistogram.logic()
