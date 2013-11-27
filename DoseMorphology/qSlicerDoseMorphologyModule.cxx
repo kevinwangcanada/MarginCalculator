@@ -84,8 +84,6 @@ QStringList qSlicerDoseMorphologyModule::contributors()const
 {
   QStringList moduleContributors;
   moduleContributors << QString("Kevin Wang (PMH, Toronto)");
-  moduleContributors << QString("Csaba Pinter (Queen's)");
-  moduleContributors << QString("Andras Lasso (Queen's)");
   return moduleContributors;
 }
 

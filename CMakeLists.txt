@@ -7,7 +7,7 @@ set(EXTENSION_NAME MarginCalculator)
 
 # ------------------------------------------------------------------------
 set(MARGINCALCULATOR_VERSION_MAJOR "0")
-set(MARGINCALCULATOR_VERSION_MINOR "1")
+set(MARGINCALCULATOR_VERSION_MINOR "2")
 set(MARGINCALCULATOR_VERSION_PATCH "0")
 set(MARGINCALCULATOR_VERSION ${MARGINCALCULATOR_VERSION_MAJOR}.${MARGINCALCULATOR_VERSION_MINOR}.${MARGINCALCULATOR_VERSION_PATCH})
 
@@ -30,7 +30,7 @@ include(${Slicer_USE_FILE})
 #INCLUDE(${SlicerRT_USE_FILE})
 
 #-----------------------------------------------------------------------------
-OPTION(MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES "Enable the building of work-in-progress, experimental modules." ON)
+OPTION(MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES "Enable the building of work-in-progress, experimental modules." OFF)
 mark_as_advanced(MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES)
 
 add_subdirectory(SlicerRtCommon)
