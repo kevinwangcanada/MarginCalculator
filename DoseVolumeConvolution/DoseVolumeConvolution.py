@@ -4,12 +4,12 @@ import string
 from __main__ import vtk, qt, ctk, slicer
 
 #
-# Dose convolution module
+# Dose volume convolution module
 #
 
-class DoseConvolution:
+class DoseVolumeConvolution:
   def __init__(self, parent):
-    parent.title = "Dose Convolution"
+    parent.title = "Dose Volume Convolution"
     parent.categories = ["Margin Calculator"]
     parent.dependencies = []
     parent.contributors = ["Kevin Wang (Princess Margaret Cancer Centre)"]
@@ -25,7 +25,7 @@ class DoseConvolution:
 # Widget
 #
 
-class DoseConvolutionWidget:
+class DoseVolumeConvolutionWidget:
 
   def __init__(self, parent=None):
     self.parent = parent
@@ -94,7 +94,7 @@ class DoseConvolutionWidget:
     self.applyButton.text = "Working..."
     self.applyButton.repaint()
     slicer.app.processEvents()
-    self.logic = DoseConvolutionLogic()
+    self.logic = DoseVolumeConvolutionLogic()
     self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.outputDoseVolumeSelector.currentNode(), self.kernelSDValueEdit.value)
     self.applyButton.text = "Apply"
 
@@ -102,7 +102,7 @@ class DoseConvolutionWidget:
 # Logic
 #
 
-class DoseConvolutionLogic:
+class DoseVolumeConvolutionLogic:
   """Implement the logic to fill the ROI.
   Nodes are passed in as arguments.
   Results are stored as 'statistics' instance variable.

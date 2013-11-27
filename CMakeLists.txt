@@ -42,7 +42,7 @@ add_subdirectory(DoseMorphology)
 add_subdirectory(MarginCalculator)
 
 if (MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES)
-  add_subdirectory(DoseConvolution)
+  add_subdirectory(DoseVolumeConvolution)
   add_subdirectory(DoseVolumeComparison)
 endif()
 

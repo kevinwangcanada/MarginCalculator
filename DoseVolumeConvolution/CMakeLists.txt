@@ -1,9 +1,9 @@
 #-----------------------------------------------------------------------------
-set(MODULE_NAME DoseConvolution)
+set(MODULE_NAME DoseVolumeConvolution)
 
 #-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS
-  DoseConvolution.py
+  DoseVolumeConvolution.py
   )
 
 set(MODULE_PYTHON_RESOURCES
