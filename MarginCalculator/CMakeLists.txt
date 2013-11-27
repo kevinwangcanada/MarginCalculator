@@ -3,7 +3,7 @@ set(MODULE_NAME MarginCalculator)
 
 #-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS
-  MarginCalculator.py
+  ${MODULE_NAME}.py
   )
 
 set(MODULE_PYTHON_RESOURCES
@@ -12,7 +12,7 @@ set(MODULE_PYTHON_RESOURCES
 
 #-----------------------------------------------------------------------------
 ctkMacroCompilePythonScript(
-  TARGET_NAME DoseConvolution
+  TARGET_NAME ${MODULE_NAME}
   SCRIPTS "${MODULE_PYTHON_SCRIPTS}"
   RESOURCES "${MODULE_PYTHON_RESOURCES}"
   DESTINATION_DIR ${CMAKE_BINARY_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}

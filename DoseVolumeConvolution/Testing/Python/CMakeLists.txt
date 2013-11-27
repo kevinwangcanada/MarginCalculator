@@ -1,6 +1,8 @@
 
 #-----------------------------------------------------------------------------
-set(KIT_UNITTEST_SCRIPTS)
+set(KIT_UNITTEST_SCRIPTS
+  DoseVolumeConvolutionTest.py
+)
 SlicerMacroConfigureGenericPythonModuleTests("${EXTENSION_NAME}" KIT_UNITTEST_SCRIPTS)
 
 #-----------------------------------------------------------------------------
