@@ -380,12 +380,16 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   std::tr1::normal_distribution<double> Zdistribution2(0.0, this->MotionSimulatorNode->GetZRdmSD());
 
   for (int i = 0; i<this->MotionSimulatorNode->GetNumberOfSimulation(); i++)
-  {
+  { 
     vtkSmartPointer<vtkImageData> baseImageData = NULL;
-
-    double x = Xdistribution(eng) + Xdistribution2(eng);
-    double y = Ydistribution(eng) + Ydistribution2(eng);
-    double z = Zdistribution(eng) + Zdistribution2(eng);
+    
+	// Generate systematic error for all fractions, it stays the same over all fractions
+    double xSys = Xdistribution(eng);
+    double ySys = Ydistribution(eng);
+    double zSys = Zdistribution(eng);
+    double x = xSys + Xdistribution2(eng);
+    double y = ySys + Ydistribution2(eng);
+    double z = zSys + Zdistribution2(eng);
     x = x < MOTION_MAX ? x : MOTION_MAX;
     y = y < MOTION_MAX ? y : MOTION_MAX;
     z = z < MOTION_MAX ? z : MOTION_MAX;
@@ -407,10 +411,13 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
     if (this->MotionSimulatorNode->GetNumberOfFraction()>=2)
     {
       for (int j = 1; j<this->MotionSimulatorNode->GetNumberOfFraction(); j++)
-      {
-        double x = Xdistribution(eng) + Xdistribution2(eng);
-        double y = Ydistribution(eng) + Ydistribution2(eng);
-        double z = Zdistribution(eng) + Zdistribution2(eng);
+      { // Generate new random error for each new fraction
+        double x = xSys + Xdistribution2(eng);
+        double y = ySys + Ydistribution2(eng);
+        double z = zSys + Zdistribution2(eng);
+        x = x < MOTION_MAX ? x : MOTION_MAX;
+        y = y < MOTION_MAX ? y : MOTION_MAX;
+        z = z < MOTION_MAX ? z : MOTION_MAX;
       
         vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
         transform->Identity();
