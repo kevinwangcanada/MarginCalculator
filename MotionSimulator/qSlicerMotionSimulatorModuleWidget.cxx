@@ -37,6 +37,7 @@
 #include <vtkMRMLScalarVolumeNode.h>
 //#include <vtkMRMLContourNode.h>
 #include <vtkMRMLMotionSimulatorDoubleArrayNode.h>
+#include <vtkMRMLScene.h>
 
 // VTK includes
 #include <vtkLookupTable.h>

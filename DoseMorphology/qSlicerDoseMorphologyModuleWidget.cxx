@@ -33,6 +33,7 @@
 
 // MRML includes
 #include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLScene.h>
 
 // VTK includes
 #include <vtkLookupTable.h>

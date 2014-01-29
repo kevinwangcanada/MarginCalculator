@@ -39,6 +39,7 @@
 #include <vtkMRMLModelDisplayNode.h>
 //#include <vtkMRMLContourNode.h>
 #include <vtkMRMLColorTableNode.h>
+#include <vtkMRMLScene.h>
 
 // VTK includes
 #include <vtkNew.h>
@@ -52,6 +53,7 @@
 #include <vtkPiecewiseFunction.h>
 #include <vtkImageResample.h>
 #include <vtkImageData.h>
+#include <vtkObjectFactory.h>
 
 // VTKSYS includes
 #include <vtksys/SystemTools.hxx>

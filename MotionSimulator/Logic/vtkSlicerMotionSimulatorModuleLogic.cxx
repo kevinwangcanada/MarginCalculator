@@ -39,6 +39,7 @@
 #include <vtkMRMLMotionSimulatorDoubleArrayNode.h>
 //#include <vtkMRMLContourNode.h>
 #include <vtkMRMLMotionSimulatorNode.h>
+#include <vtkMRMLScene.h>
 
 // VTK includes
 #include <vtkNew.h>
@@ -61,6 +62,7 @@
 #include <vtkImageChangeInformation.h>
 #include <vtkImageMathematics.h>
 #include <vtkDoubleArray.h>
+#include <vtkObjectFactory.h>
 
 // STD includes
 #include <cassert>

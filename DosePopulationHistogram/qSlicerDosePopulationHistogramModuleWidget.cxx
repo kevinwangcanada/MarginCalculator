@@ -41,7 +41,7 @@
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLChartNode.h>
 #include <vtkMRMLDoubleArrayNode.h>
-
+#include <vtkMRMLScene.h>
 
 // VTK includes
 #include <vtkStringArray.h>

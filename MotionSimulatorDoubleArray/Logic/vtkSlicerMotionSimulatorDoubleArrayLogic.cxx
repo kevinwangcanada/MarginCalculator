@@ -24,9 +24,11 @@
 // MRML includes
 #include <vtkMRMLMotionSimulatorDoubleArrayNode.h>
 #include <vtkMRMLMotionSimulatorDoubleArrayStorageNode.h>
+#include <vtkMRMLScene.h>
 
 // VTK includes
 #include <vtkNew.h>
+#include <vtkObjectFactory.h>
 
 // STD includes
 

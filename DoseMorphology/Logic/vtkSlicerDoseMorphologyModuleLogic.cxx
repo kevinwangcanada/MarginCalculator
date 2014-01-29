@@ -37,6 +37,7 @@
 #include <vtkMRMLScalarVolumeDisplayNode.h>
 #include <vtkMRMLSelectionNode.h>
 #include <vtkMRMLTransformNode.h>
+#include <vtkMRMLScene.h>
 
 // VTK includes
 #include <vtkNew.h>
@@ -58,6 +59,7 @@
 #include <vtkImageReslice.h>
 #include <vtkGeneralTransform.h>
 #include <vtkTransform.h>
+#include <vtkObjectFactory.h>
 
 // STD includes
 #include <cassert>
