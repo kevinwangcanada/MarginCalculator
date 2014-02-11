@@ -14,7 +14,7 @@ set(MARGINCALCULATOR_VERSION ${MARGINCALCULATOR_VERSION_MAJOR}.${MARGINCALCULATO
 #-----------------------------------------------------------------------------
 set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/MarginCalculator")
 set(EXTENSION_CATEGORY "MARGIN CALCULATOR")
-set(EXTENSION_CONTRIBUTORS "Kevin Wang (Radiation Medicine Program, Princess Margaret Cancer Centre, University Health Network, Toronto, Canada)")
+set(EXTENSION_CONTRIBUTORS "Kevin Wang (Princess Margaret Cancer Centre)")
 set(EXTENSION_DESCRIPTION "Extensions for RT Margin Calculator version ${MARGINCALCULATOR_VERSION}")
 set(EXTENSION_ICONURL "http://wiki.slicer.org/slicerWiki/images/f/f2/MARGINCALCULATORExtensionLogo.png")
 set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/0/04/MARGINCALCULATOR0.3_Screenshot_DVH_HeadNeck_3.png http://www.slicer.org/slicerWiki/images/c/c0/MARGINCALCULATOR0.4_Screenshot_Isodose.png http://www.slicer.org/slicerWiki/images/2/20/MARGINCALCULATOR0.4_Screenshot_Gamma.png")
@@ -40,6 +40,7 @@ add_subdirectory(MotionSimulator)
 add_subdirectory(DosePopulationHistogram)
 add_subdirectory(DoseMorphology)
 add_subdirectory(MarginCalculator)
+add_subdirectory(SyntheticRTDose)
 
 if (MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES)
   add_subdirectory(DoseVolumeComparison)
