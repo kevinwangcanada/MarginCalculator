@@ -29,6 +29,8 @@ class MarginCalculatorWidget:
 
   def __init__(self, parent=None):
     self.chartOptions = ("System", "Random", "P90", "P95", "P99")
+    self.tableWidget = qt.QTableWidget()
+    self.items = []
     if not parent:
       self.parent = slicer.qMRMLWidget()
       self.parent.setLayout(qt.QVBoxLayout())
@@ -175,8 +177,6 @@ class MarginCalculatorWidget:
     self.UpdateApplyButtonState()
 
     # model and view for stats table
-    self.tableWidget = qt.QTableWidget()
-    self.items = []
     self.tableWidget.sortingEnabled = False
     self.tableWidget.setRowCount(0)
     self.tableWidget.setColumnCount(5)
@@ -248,30 +248,29 @@ class MarginCalculatorWidget:
       self.saveButton.enabled = True
     numberOfRows = len(marginResult)
     self.tableWidget.clearContents()
-    self.items = []
     self.tableWidget.setRowCount(numberOfRows)
     for i in range(numberOfRows):
-      #print "item:", self.inputVolumeNodes[i][0]
       item = qt.QTableWidgetItem()
       item.setText(str(marginResult[i][0]))
+      self.items.append(item)
       self.tableWidget.setItem(i, 0, item )
       item2 = qt.QTableWidgetItem()
       item2.setText(str(marginResult[i][1]))
+      self.items.append(item2)
       self.tableWidget.setItem(i, 1, item2 )
       item3 = qt.QTableWidgetItem()
       item3.setText(str(marginResult[i][2]))
+      self.items.append(item3)
       self.tableWidget.setItem(i, 2, item3 )
       item4 = qt.QTableWidgetItem()
       item4.setText(str(marginResult[i][3]))
+      self.items.append(item4)
       self.tableWidget.setItem(i, 3, item4 )
       item5 = qt.QTableWidgetItem()
       item5.setText(str(marginResult[i][4]))
-      self.tableWidget.setItem(i, 4, item5 )
-      self.items.append(item)
-      self.items.append(item2)
-      self.items.append(item3)
-      self.items.append(item4)
       self.items.append(item5)
+      self.tableWidget.setItem(i, 4, item5 )
+    
 
   def onSave(self):
     """save the margin calculation 
