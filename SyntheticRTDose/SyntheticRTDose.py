@@ -102,7 +102,29 @@ class SyntheticRTDoseWidget:
     self.inputSelector.showChildNodeTypes = False
     self.inputSelector.setMRMLScene( slicer.mrmlScene )
     self.inputSelector.setToolTip( "Pick the reference dose volume." )
-    parametersFormLayout.addRow("Reference Dose Volume: ", self.inputSelector)
+    # parametersFormLayout.addRow("Reference Dose Volume: ", self.inputSelector)
+    
+    #
+    # effective dose radius
+    #
+    self.doseRadiusSliderWidget = ctk.ctkSliderWidget()
+    self.doseRadiusSliderWidget.singleStep = 1.0
+    self.doseRadiusSliderWidget.minimum = 5.0
+    self.doseRadiusSliderWidget.maximum = 30.0
+    self.doseRadiusSliderWidget.value = 25.0
+    self.doseRadiusSliderWidget.setToolTip("Set effective radius for min dose.")
+    parametersFormLayout.addRow("Radius for Min Dose:", self.doseRadiusSliderWidget)
+
+    #
+    # effective dose radius
+    #
+    self.doseValueSliderWidget = ctk.ctkSliderWidget()
+    self.doseValueSliderWidget.singleStep = 1.0
+    self.doseValueSliderWidget.minimum = 10.0
+    self.doseValueSliderWidget.maximum = 70.0
+    self.doseValueSliderWidget.value = 50.0
+    self.doseValueSliderWidget.setToolTip("Set dose.")
+    parametersFormLayout.addRow("Dose Value:", self.doseValueSliderWidget)
 
     #
     # output dose volume selector
@@ -137,28 +159,6 @@ class SyntheticRTDoseWidget:
     parametersFormLayout.addRow("Output Mask Volume: ", self.outputMaskSelector)
 
     #
-    # effective dose radius
-    #
-    self.doseRadiusSliderWidget = ctk.ctkSliderWidget()
-    self.doseRadiusSliderWidget.singleStep = 1.0
-    self.doseRadiusSliderWidget.minimum = 5.0
-    self.doseRadiusSliderWidget.maximum = 50.0
-    self.doseRadiusSliderWidget.value = 1.0
-    self.doseRadiusSliderWidget.setToolTip("Set effective radius for min dose.")
-    parametersFormLayout.addRow("Radius for Min Dose:", self.doseRadiusSliderWidget)
-
-    #
-    # effective dose radius
-    #
-    self.doseValueSliderWidget = ctk.ctkSliderWidget()
-    self.doseValueSliderWidget.singleStep = 1.0
-    self.doseValueSliderWidget.minimum = 10.0
-    self.doseValueSliderWidget.maximum = 70.0
-    self.doseValueSliderWidget.value = 50.0
-    self.doseValueSliderWidget.setToolTip("Set dose.")
-    parametersFormLayout.addRow("Dose Value:", self.doseValueSliderWidget)
-
-    #
     # Apply Button
     #
     self.applyButton = qt.QPushButton("Apply")
@@ -168,7 +168,7 @@ class SyntheticRTDoseWidget:
 
     # connections
     self.applyButton.connect('clicked(bool)', self.onApplyButton)
-    self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
+    #self.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
     self.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
     self.outputMaskSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onSelect)
 
@@ -179,14 +179,16 @@ class SyntheticRTDoseWidget:
     pass
 
   def onSelect(self):
-    self.applyButton.enabled = self.inputSelector.currentNode() and self.outputSelector.currentNode() and self.outputMaskSelector.currentNode() 
+    # self.applyButton.enabled = self.inputSelector.currentNode() and self.outputSelector.currentNode() and self.outputMaskSelector.currentNode() 
+    self.applyButton.enabled = self.outputSelector.currentNode() and self.outputMaskSelector.currentNode() 
 
   def onApplyButton(self):
     logic = SyntheticRTDoseLogic()
     doseRadius = int(self.doseRadiusSliderWidget.value)
     doseValue = int(self.doseValueSliderWidget.value)
     print("Run the algorithm")
-    logic.run(self.inputSelector.currentNode(), self.outputSelector.currentNode(), self.outputMaskSelector.currentNode() , doseRadius, doseValue)
+    # logic.run(self.inputSelector.currentNode(), self.outputSelector.currentNode(), self.outputMaskSelector.currentNode() , doseRadius, doseValue)
+    logic.run(self.outputSelector.currentNode(), self.outputMaskSelector.currentNode() , doseRadius, doseValue)
 
   def onReload(self,moduleName="SyntheticRTDose"):
     """Generic reload method for any scripted module.
@@ -247,19 +249,26 @@ class SyntheticRTDoseLogic:
     qt.QTimer.singleShot(msec, self.info.close)
     self.info.exec_()
 
-  def run(self,inputVolume,outputVolume,maskVolume,doseRadius=10, doseValue=50):
+  def run(self,outputVolume,maskVolume,doseRadius=10, doseValue=50):
     """
     Run the actual algorithm
     """
 
     self.delayDisplay('Running the aglorithm')
 
-    self.createSyntheticDose(inputVolume, outputVolume, doseRadius, doseValue)
-    self.createSyntheticMask(inputVolume, maskVolume, doseRadius)
+    # self.createSyntheticDose(inputVolume, outputVolume, doseRadius, doseValue)
+    # self.createSyntheticMask(inputVolume, maskVolume, doseRadius)
+    self.createSyntheticDose(outputVolume, doseRadius, doseValue)
+    self.createSyntheticMask(maskVolume, doseRadius)
+    mgr = slicer.app.layoutManager()
+    mgr.sliceWidget('Red').sliceLogic().FitSliceToAll()
+    mgr.sliceWidget('Yellow').sliceLogic().FitSliceToAll()
+    mgr.sliceWidget('Green').sliceLogic().FitSliceToAll()
 
     return True
 
-  def createSyntheticDose(self, refVolumeNode, doseVolumeNode, radius, value):
+  # def createSyntheticDose(self, refVolumeNode, doseVolumeNode, radius, value):
+  def createSyntheticDose(self, doseVolumeNode, radius, value):
     """
     Run the actual algorithm
     """
@@ -268,13 +277,14 @@ class SyntheticRTDoseLogic:
     roiCenter = [0, 0, 0]
     roiOrigin = [0, 0, 0]
     roiSpacing = [1, 1, 1]
-    roiDimension = [1, 1, 1]
-    roiDimension = refVolumeNode.GetImageData().GetDimensions()
+    roiDimension = [100, 100, 100]
+    # roiDimension = refVolumeNode.GetImageData().GetDimensions()
     roiCenter[0] = roiOrigin[0] + roiDimension[0]*roiSpacing[0]/2
     roiCenter[1] = roiOrigin[1] + roiDimension[1]*roiSpacing[1]/2
     roiCenter[2] = roiOrigin[2] + roiDimension[2]*roiSpacing[2]/2
     print "roiCenter", roiCenter
 
+    """
     ijkToRas = vtk.vtkMatrix4x4()
     refVolumeNode.GetIJKToRASMatrix( ijkToRas )
     roiPoint = [0,0,0,1];
@@ -285,9 +295,8 @@ class SyntheticRTDoseLogic:
     roiCenter[0] = roiPoint[0]
     roiCenter[1] = roiPoint[1]
     roiCenter[2] = roiPoint[2]
-
     print "roiCenter", roiCenter
-    
+    """
     roiSphere.SetCenter( roiCenter )
     roiSphere.SetRadius( radius+1 )
 
@@ -301,38 +310,43 @@ class SyntheticRTDoseLogic:
       # rasToSphere.DeepCopy(sphereToRas)
       # rasToSphere.Invert()
 
+    """
     ijkToSphere = vtk.vtkMatrix4x4()
     vtk.vtkMatrix4x4.Multiply4x4(rasToSphere,ijkToRas,ijkToSphere)
     ijkToSphereTransform = vtk.vtkTransform()
     ijkToSphereTransform.SetMatrix(ijkToSphere)
     roiSphere.SetTransform(ijkToSphereTransform)
+    """
 
     # Use the stencil to fill the volume
-    refImageData = refVolumeNode.GetImageData()
+    # refImageData = refVolumeNode.GetImageData()
 
     imageSource = vtk.vtkImageNoiseSource()
     imageSource.SetMinimum(0)
     imageSource.SetMaximum(0)
-    imageSource.SetWholeExtent(refImageData.GetWholeExtent())
+    # extent = refImageData.GetWholeExtent()
+    imageSource.SetWholeExtent(0, roiDimension[0]-1, 0, roiDimension[1]-1, 0, roiDimension[2]-1) 
     imageSource.Update()
     
+    """
     changeInfo = vtk.vtkImageChangeInformation()
     changeInfo.SetInput(imageSource.GetOutput())
     changeInfo.SetOutputOrigin(refImageData.GetOrigin())
     changeInfo.SetOutputSpacing(refImageData.GetSpacing())
     changeInfo.Update()
+    """
 
     # Convert the implicit function to a stencil
     functionToStencil = vtk.vtkImplicitFunctionToImageStencil()
     functionToStencil.SetInput(roiSphere)
-    functionToStencil.SetOutputOrigin(refImageData.GetOrigin())
-    functionToStencil.SetOutputSpacing(refImageData.GetSpacing())
-    functionToStencil.SetOutputWholeExtent(refImageData.GetWholeExtent())
+    functionToStencil.SetOutputOrigin(0,0,0)
+    functionToStencil.SetOutputSpacing(1,1,1)
+    functionToStencil.SetOutputWholeExtent(0, roiDimension[0]-1, 0, roiDimension[1]-1, 0, roiDimension[2]-1)
     functionToStencil.Update()
 
     # Apply the stencil to the volume
     stencilToImage=vtk.vtkImageStencil()
-    stencilToImage.SetInput(changeInfo.GetOutput())
+    stencilToImage.SetInput(imageSource.GetOutput())
     stencilToImage.SetStencil(functionToStencil.GetOutput())
     stencilToImage.ReverseStencilOn()
     stencilToImage.SetBackgroundValue(value)
@@ -344,13 +358,39 @@ class SyntheticRTDoseLogic:
     smooth.SetRadiusFactors(3,3,3)
     smooth.SetDimensionality(3)
     smooth.Update()
+    """
+    resample = vtk.vtkImageReslice()
+    resample.SetInput(smooth.GetOutput())
+    resample.SetOutputOrigin(refImageData.GetOrigin())
+    resample.SetOutputSpacing(refImageData.GetSpacing()[0]/2, refImageData.GetSpacing()[1]/2, refImageData.GetSpacing()[2]/2 )
+    resample.SetOutputExtent(extent[0], (extent[1]-extent[0])*2-1, 
+                             extent[2], (extent[3]-extent[2])*2-1, 
+                             extent[4], (extent[5]-extent[4])*2-1)
+                             
+    resample.Update()
     
+    changeInfo2 = vtk.vtkImageChangeInformation()
+    changeInfo2.SetInput(resample.GetOutput())
+    changeInfo2.SetOutputOrigin(refImageData.GetOrigin())
+    changeInfo2.SetOutputSpacing(refImageData.GetSpacing())
+    changeInfo2.Update()
+    """
+
     # Update the volume with the stencil operation result
     doseVolumeNode.SetAndObserveImageData(smooth.GetOutput())
-    doseVolumeNode.CopyOrientation(refVolumeNode)
+    doseVolumeNode.SetOrigin(0,0,0)
+    doseVolumeNode.SetSpacing(1,1,1)
+    # doseVolumeNode.CopyOrientation(refVolumeNode)
     doseVolumeNode.SetAttribute("DicomRtImport.DoseVolume", "1")
+    
+    mgr = slicer.app.layoutManager()
+    mgr.sliceWidget('Red').sliceLogic().GetSliceCompositeNode().SetBackgroundVolumeID(doseVolumeNode.GetID())
+    mgr.sliceWidget('Yellow').sliceLogic().GetSliceCompositeNode().SetBackgroundVolumeID(doseVolumeNode.GetID())
+    mgr.sliceWidget('Green').sliceLogic().GetSliceCompositeNode().SetBackgroundVolumeID(doseVolumeNode.GetID())
+    
 
-  def createSyntheticMask(self, refVolumeNode, maskVolumeNode, radius):
+  # def createSyntheticMask(self, refVolumeNode, maskVolumeNode, radius):
+  def createSyntheticMask(self, maskVolumeNode, radius):
     """
     Run the actual algorithm
     """
@@ -359,13 +399,14 @@ class SyntheticRTDoseLogic:
     roiCenter = [0, 0, 0]
     roiOrigin = [0, 0, 0]
     roiSpacing = [1, 1, 1]
-    roiDimension = [1, 1, 1]
-    roiDimension = refVolumeNode.GetImageData().GetDimensions()
+    roiDimension = [100, 100, 100]
+    # roiDimension = refVolumeNode.GetImageData().GetDimensions()
     roiCenter[0] = roiOrigin[0] + roiDimension[0]*roiSpacing[0]/2
     roiCenter[1] = roiOrigin[1] + roiDimension[1]*roiSpacing[1]/2
     roiCenter[2] = roiOrigin[2] + roiDimension[2]*roiSpacing[2]/2
     print "roiCenter", roiCenter
 
+    """
     ijkToRas = vtk.vtkMatrix4x4()
     refVolumeNode.GetIJKToRASMatrix( ijkToRas )
     roiPoint = [0,0,0,1];
@@ -378,6 +419,7 @@ class SyntheticRTDoseLogic:
     roiCenter[2] = roiPoint[2]
 
     print "roiCenter", roiCenter
+    """
     
     roiSphere.SetCenter( roiCenter )
     roiSphere.SetRadius( radius )
@@ -392,6 +434,7 @@ class SyntheticRTDoseLogic:
       # rasToSphere.DeepCopy(sphereToRas)
       # rasToSphere.Invert()
 
+    """
     ijkToSphere = vtk.vtkMatrix4x4()
     vtk.vtkMatrix4x4.Multiply4x4(rasToSphere,ijkToRas,ijkToSphere)
     ijkToSphereTransform = vtk.vtkTransform()
@@ -400,44 +443,72 @@ class SyntheticRTDoseLogic:
 
     # Use the stencil to fill the volume
     refImageData = refVolumeNode.GetImageData()
-
+    """
+    
     imageSource = vtk.vtkImageNoiseSource()
     imageSource.SetMinimum(0)
     imageSource.SetMaximum(0)
-    imageSource.SetWholeExtent(refImageData.GetWholeExtent())
+    imageSource.SetWholeExtent(0, roiDimension[0]-1, 0, roiDimension[1]-1, 0, roiDimension[2]-1)
     imageSource.Update()
     
     imageCast = vtk.vtkImageCast()
     imageCast.SetInput(imageSource.GetOutput())
     imageCast.SetOutputScalarTypeToUnsignedChar()
     imageCast.Update()
-   
+    
+    """
     changeInfo = vtk.vtkImageChangeInformation()
     changeInfo.SetInput(imageCast.GetOutput())
     changeInfo.SetOutputOrigin(refImageData.GetOrigin())
     changeInfo.SetOutputSpacing(refImageData.GetSpacing())
     changeInfo.Update()
+    """
 
     # Convert the implicit function to a stencil
     functionToStencil = vtk.vtkImplicitFunctionToImageStencil()
     functionToStencil.SetInput(roiSphere)
-    functionToStencil.SetOutputOrigin(refImageData.GetOrigin())
-    functionToStencil.SetOutputSpacing(refImageData.GetSpacing())
-    functionToStencil.SetOutputWholeExtent(refImageData.GetWholeExtent())
+    functionToStencil.SetOutputOrigin(0,0,0)
+    functionToStencil.SetOutputSpacing(1,1,1)
+    functionToStencil.SetOutputWholeExtent(0, roiDimension[0]-1, 0, roiDimension[1]-1, 0, roiDimension[2]-1)
     functionToStencil.Update()
 
     # Apply the stencil to the volume
     stencilToImage=vtk.vtkImageStencil()
-    stencilToImage.SetInput(changeInfo.GetOutput())
+    stencilToImage.SetInput(imageCast.GetOutput())
     stencilToImage.SetStencil(functionToStencil.GetOutput())
     stencilToImage.ReverseStencilOn()
     stencilToImage.SetBackgroundValue(1)
     stencilToImage.Update()
 
+    """
+    extent = refImageData.GetWholeExtent()
+    resample = vtk.vtkImageReslice()
+    resample.SetInput(stencilToImage.GetOutput())
+    resample.SetOutputOrigin(refImageData.GetOrigin())
+    resample.SetOutputSpacing(refImageData.GetSpacing()[0]/2, refImageData.GetSpacing()[1]/2, refImageData.GetSpacing()[2]/2 )
+    resample.SetOutputExtent(extent[0], (extent[1]-extent[0])*2-1, 
+                             extent[2], (extent[3]-extent[2])*2-1, 
+                             extent[4], (extent[5]-extent[4])*2-1)
+                             
+    resample.Update()
+    
+    changeInfo2 = vtk.vtkImageChangeInformation()
+    changeInfo2.SetInput(resample.GetOutput())
+    changeInfo2.SetOutputOrigin(refImageData.GetOrigin())
+    changeInfo2.SetOutputSpacing(refImageData.GetSpacing())
+    changeInfo2.Update()
+    """
+
     # Update the volume with the stencil operation result
     maskVolumeNode.SetAndObserveImageData(stencilToImage.GetOutput())
-    maskVolumeNode.CopyOrientation(refVolumeNode)
-
+    maskVolumeNode.SetOrigin(0,0,0)
+    maskVolumeNode.SetSpacing(1,1,1)
+    # maskVolumeNode.CopyOrientation(refVolumeNode)
+    mgr = slicer.app.layoutManager()
+    mgr.sliceWidget('Red').sliceLogic().GetSliceCompositeNode().SetLabelVolumeID(maskVolumeNode.GetID())
+    mgr.sliceWidget('Yellow').sliceLogic().GetSliceCompositeNode().SetLabelVolumeID(maskVolumeNode.GetID())
+    mgr.sliceWidget('Green').sliceLogic().GetSliceCompositeNode().SetLabelVolumeID(maskVolumeNode.GetID())
+    
 class SyntheticRTDoseTest(unittest.TestCase):
   """
   This is the test case for your scripted module.
