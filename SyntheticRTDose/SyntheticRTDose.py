@@ -266,38 +266,61 @@ class SyntheticRTDoseLogic:
     
     roiSphere = vtk.vtkSphere()
     roiCenter = [0, 0, 0]
-    # doseVolumeNode.GetXYZ( roiCenter )
+    roiOrigin = [0, 0, 0]
+    roiSpacing = [1, 1, 1]
+    roiDimension = [1, 1, 1]
+    roiDimension = refVolumeNode.GetImageData().GetDimensions()
+    roiCenter[0] = roiOrigin[0] + roiDimension[0]*roiSpacing[0]/2
+    roiCenter[1] = roiOrigin[1] + roiDimension[1]*roiSpacing[1]/2
+    roiCenter[2] = roiOrigin[2] + roiDimension[2]*roiSpacing[2]/2
+    print "roiCenter", roiCenter
+
+    ijkToRas = vtk.vtkMatrix4x4()
+    refVolumeNode.GetIJKToRASMatrix( ijkToRas )
+    roiPoint = [0,0,0,1];
+    roiPoint[0] = roiCenter[0]
+    roiPoint[1] = roiCenter[1]
+    roiPoint[2] = roiCenter[2]
+    roiPoint = ijkToRas.MultiplyPoint(roiPoint)
+    roiCenter[0] = roiPoint[0]
+    roiCenter[1] = roiPoint[1]
+    roiCenter[2] = roiPoint[2]
+
+    print "roiCenter", roiCenter
+    
     roiSphere.SetCenter( roiCenter )
-    roiSphere.SetRadius( radius )
+    roiSphere.SetRadius( radius+1 )
 
     # Determine the transform between the box and the image IJK coordinate systems
 
     rasToSphere = vtk.vtkMatrix4x4()
-    if roiNode.GetTransformNodeID() != None:
-      roiSphereTransformNode = slicer.mrmlScene.GetNodeByID(roiNode.GetTransformNodeID())
-      sphereToRas = vtk.vtkMatrix4x4()
-      roiSphereTransformNode.GetMatrixTransformToWorld(sphereToRas)
-      rasToSphere.DeepCopy(sphereToRas)
-      rasToSphere.Invert()
-
-    ijkToRas = vtk.vtkMatrix4x4()
-    refVolumeNode.GetIJKToRASMatrix( ijkToRas )
+    # if roiNode.GetTransformNodeID() != None:
+      # roiSphereTransformNode = slicer.mrmlScene.GetNodeByID(roiNode.GetTransformNodeID())
+      # sphereToRas = vtk.vtkMatrix4x4()
+      # roiSphereTransformNode.GetMatrixTransformToWorld(sphereToRas)
+      # rasToSphere.DeepCopy(sphereToRas)
+      # rasToSphere.Invert()
 
     ijkToSphere = vtk.vtkMatrix4x4()
     vtk.vtkMatrix4x4.Multiply4x4(rasToSphere,ijkToRas,ijkToSphere)
     ijkToSphereTransform = vtk.vtkTransform()
-    ijkToSphereTransform.SetMatrix(ijkToBox)
+    ijkToSphereTransform.SetMatrix(ijkToSphere)
     roiSphere.SetTransform(ijkToSphereTransform)
 
     # Use the stencil to fill the volume
-
-    imageData = vtk.vtkImageData()
     refImageData = refVolumeNode.GetImageData()
-    imageData.SetOrigin(refImageData.GetOrigin())
-    imageData.SetSpacing(refImageData.GetSpacing())
-    imageData.SetExtent(refImageData.GetWholeExtent())
-    imageData.SetScalarTypeToUnsignedChar()
-    imageData.AllocateScalars()
+
+    imageSource = vtk.vtkImageNoiseSource()
+    imageSource.SetMinimum(0)
+    imageSource.SetMaximum(0)
+    imageSource.SetWholeExtent(refImageData.GetWholeExtent())
+    imageSource.Update()
+    
+    changeInfo = vtk.vtkImageChangeInformation()
+    changeInfo.SetInput(imageSource.GetOutput())
+    changeInfo.SetOutputOrigin(refImageData.GetOrigin())
+    changeInfo.SetOutputSpacing(refImageData.GetSpacing())
+    changeInfo.Update()
 
     # Convert the implicit function to a stencil
     functionToStencil = vtk.vtkImplicitFunctionToImageStencil()
@@ -309,15 +332,23 @@ class SyntheticRTDoseLogic:
 
     # Apply the stencil to the volume
     stencilToImage=vtk.vtkImageStencil()
-    stencilToImage.SetInput(imageData)
+    stencilToImage.SetInput(changeInfo.GetOutput())
     stencilToImage.SetStencil(functionToStencil.GetOutput())
     stencilToImage.ReverseStencilOn()
     stencilToImage.SetBackgroundValue(value)
     stencilToImage.Update()
-
+    
+    smooth = vtk.vtkImageGaussianSmooth()
+    smooth.SetInput(stencilToImage.GetOutput())
+    smooth.SetStandardDeviations(3,3,3) # place to change gradient size.
+    smooth.SetRadiusFactors(3,3,3)
+    smooth.SetDimensionality(3)
+    smooth.Update()
+    
     # Update the volume with the stencil operation result
-    doseVolumeNode.SetAndObserveImageData(stencilToImage.GetOutput())
+    doseVolumeNode.SetAndObserveImageData(smooth.GetOutput())
     doseVolumeNode.CopyOrientation(refVolumeNode)
+    doseVolumeNode.SetAttribute("DicomRtImport.DoseVolume", "1")
 
   def createSyntheticMask(self, refVolumeNode, maskVolumeNode, radius):
     """
@@ -326,38 +357,66 @@ class SyntheticRTDoseLogic:
 
     roiSphere = vtk.vtkSphere()
     roiCenter = [0, 0, 0]
-    roiNode.GetXYZ( roiCenter )
+    roiOrigin = [0, 0, 0]
+    roiSpacing = [1, 1, 1]
+    roiDimension = [1, 1, 1]
+    roiDimension = refVolumeNode.GetImageData().GetDimensions()
+    roiCenter[0] = roiOrigin[0] + roiDimension[0]*roiSpacing[0]/2
+    roiCenter[1] = roiOrigin[1] + roiDimension[1]*roiSpacing[1]/2
+    roiCenter[2] = roiOrigin[2] + roiDimension[2]*roiSpacing[2]/2
+    print "roiCenter", roiCenter
+
+    ijkToRas = vtk.vtkMatrix4x4()
+    refVolumeNode.GetIJKToRASMatrix( ijkToRas )
+    roiPoint = [0,0,0,1];
+    roiPoint[0] = roiCenter[0]
+    roiPoint[1] = roiCenter[1]
+    roiPoint[2] = roiCenter[2]
+    roiPoint = ijkToRas.MultiplyPoint(roiPoint)
+    roiCenter[0] = roiPoint[0]
+    roiCenter[1] = roiPoint[1]
+    roiCenter[2] = roiPoint[2]
+
+    print "roiCenter", roiCenter
+    
     roiSphere.SetCenter( roiCenter )
     roiSphere.SetRadius( radius )
 
     # Determine the transform between the box and the image IJK coordinate systems
 
     rasToSphere = vtk.vtkMatrix4x4()
-    if roiNode.GetTransformNodeID() != None:
-      roiSphereTransformNode = slicer.mrmlScene.GetNodeByID(roiNode.GetTransformNodeID())
-      sphereToRas = vtk.vtkMatrix4x4()
-      roiSphereTransformNode.GetMatrixTransformToWorld(sphereToRas)
-      rasToSphere.DeepCopy(sphereToRas)
-      rasToSphere.Invert()
-
-    ijkToRas = vtk.vtkMatrix4x4()
-    refVolumeNode.GetIJKToRASMatrix( ijkToRas )
+    # if roiNode.GetTransformNodeID() != None:
+      # roiSphereTransformNode = slicer.mrmlScene.GetNodeByID(roiNode.GetTransformNodeID())
+      # sphereToRas = vtk.vtkMatrix4x4()
+      # roiSphereTransformNode.GetMatrixTransformToWorld(sphereToRas)
+      # rasToSphere.DeepCopy(sphereToRas)
+      # rasToSphere.Invert()
 
     ijkToSphere = vtk.vtkMatrix4x4()
     vtk.vtkMatrix4x4.Multiply4x4(rasToSphere,ijkToRas,ijkToSphere)
     ijkToSphereTransform = vtk.vtkTransform()
-    ijkToSphereTransform.SetMatrix(ijkToBox)
+    ijkToSphereTransform.SetMatrix(ijkToSphere)
     roiSphere.SetTransform(ijkToSphereTransform)
 
     # Use the stencil to fill the volume
-
-    imageData = vtk.vtkImageData()
     refImageData = refVolumeNode.GetImageData()
-    imageData.SetOrigin(refImageData.GetOrigin())
-    imageData.SetSpacing(refImageData.GetSpacing())
-    imageData.SetExtent(refImageData.GetWholeExtent())
-    imageData.SetScalarTypeToUnsignedChar()
-    imageData.AllocateScalars()
+
+    imageSource = vtk.vtkImageNoiseSource()
+    imageSource.SetMinimum(0)
+    imageSource.SetMaximum(0)
+    imageSource.SetWholeExtent(refImageData.GetWholeExtent())
+    imageSource.Update()
+    
+    imageCast = vtk.vtkImageCast()
+    imageCast.SetInput(imageSource.GetOutput())
+    imageCast.SetOutputScalarTypeToUnsignedChar()
+    imageCast.Update()
+   
+    changeInfo = vtk.vtkImageChangeInformation()
+    changeInfo.SetInput(imageCast.GetOutput())
+    changeInfo.SetOutputOrigin(refImageData.GetOrigin())
+    changeInfo.SetOutputSpacing(refImageData.GetSpacing())
+    changeInfo.Update()
 
     # Convert the implicit function to a stencil
     functionToStencil = vtk.vtkImplicitFunctionToImageStencil()
@@ -369,7 +428,7 @@ class SyntheticRTDoseLogic:
 
     # Apply the stencil to the volume
     stencilToImage=vtk.vtkImageStencil()
-    stencilToImage.SetInput(imageData)
+    stencilToImage.SetInput(changeInfo.GetOutput())
     stencilToImage.SetStencil(functionToStencil.GetOutput())
     stencilToImage.ReverseStencilOn()
     stencilToImage.SetBackgroundValue(1)
