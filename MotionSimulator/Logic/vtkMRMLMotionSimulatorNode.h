@@ -83,6 +83,10 @@ public:
   // Description:
 
   /// Get/Set Save labelmaps checkbox state
+  vtkGetMacro(SystematicErrorSD, double);
+  vtkSetMacro(SystematicErrorSD, double);
+
+  /// Get/Set Save labelmaps checkbox state
   vtkGetMacro(XSysSD, double);
   vtkSetMacro(XSysSD, double);
 
@@ -93,6 +97,10 @@ public:
   /// Get/Set Save labelmaps checkbox state
   vtkGetMacro(ZSysSD, double);
   vtkSetMacro(ZSysSD, double);
+
+  /// Get/Set Save labelmaps checkbox state
+  vtkGetMacro(RandomErrorSD, double);
+  vtkSetMacro(RandomErrorSD, double);
 
   /// Get/Set Save labelmaps checkbox state
   vtkGetMacro(XRdmSD, double);
@@ -122,11 +130,13 @@ protected:
 
 protected:
   /// 
+  double SystematicErrorSD;
   double XSysSD;
   double YSysSD;
   double ZSysSD;
 
-  /// 
+  ///
+  double RandomErrorSD;
   double XRdmSD;
   double YRdmSD;
   double ZRdmSD;

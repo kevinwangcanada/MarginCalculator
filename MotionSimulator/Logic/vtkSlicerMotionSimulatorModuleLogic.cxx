@@ -374,12 +374,30 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
 
   std::tr1::mt19937 eng;  
   eng.seed(time(NULL));
-  std::tr1::normal_distribution<double> Xdistribution(0.0, this->MotionSimulatorNode->GetXSysSD());
-  std::tr1::normal_distribution<double> Ydistribution(0.0, this->MotionSimulatorNode->GetYSysSD());
-  std::tr1::normal_distribution<double> Zdistribution(0.0, this->MotionSimulatorNode->GetZSysSD());
-  std::tr1::normal_distribution<double> Xdistribution2(0.0, this->MotionSimulatorNode->GetXRdmSD());
-  std::tr1::normal_distribution<double> Ydistribution2(0.0, this->MotionSimulatorNode->GetYRdmSD());
-  std::tr1::normal_distribution<double> Zdistribution2(0.0, this->MotionSimulatorNode->GetZRdmSD());
+
+  double xSysWeight = this->MotionSimulatorNode->GetXSysSD();
+  double ySysWeight = this->MotionSimulatorNode->GetYSysSD();
+  double zSysWeight = this->MotionSimulatorNode->GetZSysSD();
+  double totalSysWeight = 1.0;
+  totalSysWeight = sqrt(xSysWeight*xSysWeight + ySysWeight*ySysWeight + zSysWeight*zSysWeight);
+  xSysWeight = xSysWeight/totalSysWeight;
+  ySysWeight = ySysWeight/totalSysWeight;
+  zSysWeight = zSysWeight/totalSysWeight;
+  std::tr1::normal_distribution<double> Xdistribution(0.0, xSysWeight * this->MotionSimulatorNode->GetSystematicErrorSD());
+  std::tr1::normal_distribution<double> Ydistribution(0.0, ySysWeight * this->MotionSimulatorNode->GetSystematicErrorSD());
+  std::tr1::normal_distribution<double> Zdistribution(0.0, zSysWeight * this->MotionSimulatorNode->GetSystematicErrorSD());
+
+  double xRdmWeight = this->MotionSimulatorNode->GetXRdmSD();
+  double yRdmWeight = this->MotionSimulatorNode->GetYRdmSD();
+  double zRdmWeight = this->MotionSimulatorNode->GetZRdmSD();
+  double totalRdmWeight = 1.0;
+  totalRdmWeight = sqrt(xRdmWeight*xRdmWeight + yRdmWeight*yRdmWeight + zRdmWeight*zRdmWeight);
+  xRdmWeight = xRdmWeight/totalRdmWeight;
+  yRdmWeight = yRdmWeight/totalRdmWeight;
+  zRdmWeight = zRdmWeight/totalRdmWeight;
+  std::tr1::normal_distribution<double> Xdistribution2(0.0, xRdmWeight * this->MotionSimulatorNode->GetRandomErrorSD());
+  std::tr1::normal_distribution<double> Ydistribution2(0.0, yRdmWeight * this->MotionSimulatorNode->GetRandomErrorSD());
+  std::tr1::normal_distribution<double> Zdistribution2(0.0, zRdmWeight * this->MotionSimulatorNode->GetRandomErrorSD());
 
   for (int i = 0; i<this->MotionSimulatorNode->GetNumberOfSimulation(); i++)
   { 

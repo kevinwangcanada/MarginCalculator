@@ -50,9 +50,13 @@ vtkMRMLMotionSimulatorNode::vtkMRMLMotionSimulatorNode()
 {
   this->NumberOfSimulation = 1;
   this->NumberOfFraction = 1;
+
+  this->SystematicErrorSD = 1;
   this->XSysSD = 1;
   this->YSysSD = 1;
   this->ZSysSD = 1;
+
+  this->RandomErrorSD = 1;
   this->XRdmSD = 1;
   this->YRdmSD = 1;
   this->ZRdmSD = 1;
@@ -77,11 +81,15 @@ void vtkMRMLMotionSimulatorNode::WriteXML(ostream& of, int nIndent)
 
   of << indent << " NumberOfFraction=\"" << (this->NumberOfFraction) << "\"";
 
+  of << indent << " SystematicErrorSD=\"" << (this->SystematicErrorSD) << "\"";
+
   of << indent << " XSysSD=\"" << (this->XSysSD) << "\"";
 
   of << indent << " YSysSD=\"" << (this->YSysSD) << "\"";
 
   of << indent << " ZSysSD=\"" << (this->ZSysSD) << "\"";
+
+  of << indent << " RandomErrorSD=\"" << (this->RandomErrorSD) << "\"";
 
   of << indent << " XRdmSD=\"" << (this->XRdmSD) << "\"";
 
@@ -114,19 +122,9 @@ void vtkMRMLMotionSimulatorNode::ReadXMLAttributes(const char** atts)
       this->NumberOfFraction = 
         (strcmp(attValue,"true") ? false : true);
       }
-    else if (!strcmp(attName, "XSysSD")) 
+    else if (!strcmp(attName, "SystematicErrorSD")) 
       {
-      this->XSysSD = 
-        (strcmp(attValue,"true") ? false : true);
-      }
-    else if (!strcmp(attName, "YSysSD")) 
-      {
-      this->YSysSD = 
-        (strcmp(attValue,"true") ? false : true);
-      }
-    else if (!strcmp(attName, "ZSysSD")) 
-      {
-      this->ZSysSD = 
+      this->SystematicErrorSD = 
         (strcmp(attValue,"true") ? false : true);
       }
     else if (!strcmp(attName, "XSysSD")) 
@@ -142,6 +140,26 @@ void vtkMRMLMotionSimulatorNode::ReadXMLAttributes(const char** atts)
     else if (!strcmp(attName, "ZSysSD")) 
       {
       this->ZSysSD = 
+        (strcmp(attValue,"true") ? false : true);
+      }
+    else if (!strcmp(attName, "RandomErrorSD")) 
+      {
+      this->RandomErrorSD = 
+        (strcmp(attValue,"true") ? false : true);
+      }
+    else if (!strcmp(attName, "XRdmSD")) 
+      {
+      this->XRdmSD = 
+        (strcmp(attValue,"true") ? false : true);
+      }
+    else if (!strcmp(attName, "YRdmSD")) 
+      {
+      this->YRdmSD = 
+        (strcmp(attValue,"true") ? false : true);
+      }
+    else if (!strcmp(attName, "ZRdmSD")) 
+      {
+      this->ZRdmSD = 
         (strcmp(attValue,"true") ? false : true);
       }
     }
@@ -159,12 +177,16 @@ void vtkMRMLMotionSimulatorNode::Copy(vtkMRMLNode *anode)
 
   this->NumberOfSimulation = node->GetNumberOfSimulation();
   this->NumberOfFraction = node->GetNumberOfFraction();
+
+  this->SystematicErrorSD = node->GetSystematicErrorSD();
   this->XSysSD = node->GetXSysSD();
   this->YSysSD = node->GetYSysSD();
   this->ZSysSD = node->GetZSysSD();
-  this->XSysSD = node->GetXSysSD();
-  this->YSysSD = node->GetYSysSD();
-  this->ZSysSD = node->GetZSysSD();
+
+  this->RandomErrorSD = node->GetRandomErrorSD();
+  this->XRdmSD = node->GetXRdmSD();
+  this->YRdmSD = node->GetYRdmSD();
+  this->ZRdmSD = node->GetZRdmSD();
 
   this->DisableModifiedEventOff();
   this->InvokePendingModifiedEvent();
@@ -177,12 +199,16 @@ void vtkMRMLMotionSimulatorNode::PrintSelf(ostream& os, vtkIndent indent)
 
   os << indent << "NumberOfSimulation:   " << (this->NumberOfSimulation) << "\n";
   os << indent << "NumberOfFraction:   " << (this->NumberOfFraction) << "\n";
+
+  os << indent << "SystematicErrorSD:   " << (this->SystematicErrorSD) << "\n";
   os << indent << "XSysSD:   " << (this->XSysSD) << "\n";
   os << indent << "YSysSD:   " << (this->YSysSD) << "\n";
   os << indent << "ZSysSD:   " << (this->ZSysSD) << "\n";
-  os << indent << "XSysSD:   " << (this->XSysSD) << "\n";
-  os << indent << "YSysSD:   " << (this->YSysSD) << "\n";
-  os << indent << "ZSysSD:   " << (this->ZSysSD) << "\n";
+
+  os << indent << "RandomErrorSD:   " << (this->RandomErrorSD) << "\n";
+  os << indent << "XRdmSD:   " << (this->XRdmSD) << "\n";
+  os << indent << "YRdmSD:   " << (this->YRdmSD) << "\n";
+  os << indent << "ZRdmSD:   " << (this->ZRdmSD) << "\n";
 }
 
 //----------------------------------------------------------------------------

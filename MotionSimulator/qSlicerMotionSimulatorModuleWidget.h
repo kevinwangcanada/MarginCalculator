@@ -65,11 +65,15 @@ protected slots:
 
   void outputArrayNodeChanged(vtkMRMLNode* node);
 
+  void lineEditSystematicErrorSDChanged(const QString & text);
+
   void lineEditXSysSDChanged(const QString & text);
 
   void lineEditYSysSDChanged(const QString & text);
 
   void lineEditZSysSDChanged(const QString & text);
+
+  void lineEditRandomErrorSDChanged(const QString & text);
 
   void lineEditXRdmSDChanged(const QString & text);
 
