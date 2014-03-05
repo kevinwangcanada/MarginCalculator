@@ -83,8 +83,11 @@ vtkSlicerDosePopulationHistogramModuleLogic::~vtkSlicerDosePopulationHistogramMo
     {
       vtkMRMLDoubleArrayNode* dvhNode = vtkMRMLDoubleArrayNode::SafeDownCast(
         this->GetMRMLScene()->GetNodeByID(it->c_str()));
-      dvhNode->Delete();
-    }    
+      if (dvhNode) 
+      {
+        dvhNode->Delete();
+      }
+    }
   }
 
   vtkSetAndObserveMRMLNodeMacro(this->DosePopulationHistogramNode, NULL);
@@ -450,11 +453,11 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
   }
   
   // Create node and fill statistics
-  vtkMRMLDoubleArrayNode* outputDoubleArrayNode = this->DosePopulationHistogramNode->GetOutputDoubleArrayNode();
+  vtkSmartPointer<vtkMRMLDoubleArrayNode> outputDoubleArrayNode = this->DosePopulationHistogramNode->GetOutputDoubleArrayNode();
 
   if (!outputDoubleArrayNode) 
   {
-    outputDoubleArrayNode = (vtkMRMLDoubleArrayNode*)( this->GetMRMLScene()->CreateNodeByClass("vtkMRMLDoubleArrayNode") );
+	outputDoubleArrayNode = vtkSmartPointer<vtkMRMLDoubleArrayNode>::New();
   }
   std::string DPHArrayNodeName = std::string(doubleArrayNode->GetName()) + SlicerRtCommon::DVH_ARRAY_NODE_NAME_POSTFIX;
   DPHArrayNodeName = this->GetMRMLScene()->GenerateUniqueName(DPHArrayNodeName);
