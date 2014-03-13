@@ -4,7 +4,7 @@ import string
 from __main__ import vtk, qt, ctk, slicer
 
 #
-# Margin caluclator module
+# Margin calculator module
 #
 
 class MarginCalculator:
@@ -44,7 +44,10 @@ class MarginCalculatorWidget:
     self.numberOfFractions = 1
     self.systematicErrorRange = 0.5
     self.randomErrorRange = 0.5
-    self.ROIRadius = 10
+    self.doseGrowRange = 5
+    self.ROIXRadius = 10
+    self.ROIYRadius = 10
+    self.ROIZRadius = 10
     if not parent:
       self.setup()
       self.parent.show()
@@ -160,15 +163,45 @@ class MarginCalculatorWidget:
     self.randomErrorRangeSlider.value = 0.5
     self.marginCalculationFormLayout.addRow("Random Error Range (mm): ", self.randomErrorRangeSlider)
 
-    # ROI radius slider
-    self.ROIRadiusSlider = ctk.ctkSliderWidget()
-    self.ROIRadiusSlider.decimals = 1
-    self.ROIRadiusSlider.minimum = 0
-    self.ROIRadiusSlider.maximum = 50
-    self.ROIRadiusSlider.singleStep = 0.1
-    self.ROIRadiusSlider.pageStep = 2.0
-    self.ROIRadiusSlider.value = 10
-    self.marginCalculationFormLayout.addRow("ROI Radius (mm): ", self.ROIRadiusSlider)
+    # Dose growing range slider
+    self.doseGrowRangeSlider = ctk.ctkSliderWidget()
+    self.doseGrowRangeSlider.decimals = 1
+    self.doseGrowRangeSlider.minimum = 0
+    self.doseGrowRangeSlider.maximum = 10
+    self.doseGrowRangeSlider.singleStep = 0.2
+    self.doseGrowRangeSlider.pageStep = 1.0
+    self.doseGrowRangeSlider.value = 5
+    self.marginCalculationFormLayout.addRow("Dose grow Range (mm): ", self.doseGrowRangeSlider)
+
+    # ROI radius x slider
+    self.ROIRadiusXSlider = ctk.ctkSliderWidget()
+    self.ROIRadiusXSlider.decimals = 1
+    self.ROIRadiusXSlider.minimum = 2
+    self.ROIRadiusXSlider.maximum = 30
+    self.ROIRadiusXSlider.singleStep = 0.1
+    self.ROIRadiusXSlider.pageStep = 2.0
+    self.ROIRadiusXSlider.value = 10
+    self.marginCalculationFormLayout.addRow("ROI Radius X(mm): ", self.ROIRadiusXSlider)
+
+    # ROI radius y slider
+    self.ROIRadiusYSlider = ctk.ctkSliderWidget()
+    self.ROIRadiusYSlider.decimals = 1
+    self.ROIRadiusYSlider.minimum = 2
+    self.ROIRadiusYSlider.maximum = 30
+    self.ROIRadiusYSlider.singleStep = 0.1
+    self.ROIRadiusYSlider.pageStep = 2.0
+    self.ROIRadiusYSlider.value = 10
+    self.marginCalculationFormLayout.addRow("ROI Radius Y(mm): ", self.ROIRadiusYSlider)
+
+    # ROI radius z slider
+    self.ROIRadiusZSlider = ctk.ctkSliderWidget()
+    self.ROIRadiusZSlider.decimals = 1
+    self.ROIRadiusZSlider.minimum = 2
+    self.ROIRadiusZSlider.maximum = 30
+    self.ROIRadiusZSlider.singleStep = 0.1
+    self.ROIRadiusZSlider.pageStep = 2.0
+    self.ROIRadiusZSlider.value = 10
+    self.marginCalculationFormLayout.addRow("ROI Radius Z(mm): ", self.ROIRadiusZSlider)
 
     # Apply button
     self.applyButton = qt.QPushButton("Calculate")
@@ -202,7 +235,10 @@ class MarginCalculatorWidget:
     self.numberOfFractionsSlider.connect('valueChanged(double)', self.onNumberOfFractionsChanged)
     self.systematicErrorRangeSlider.connect('valueChanged(double)', self.onSystematicErrorRangeChanged)
     self.randomErrorRangeSlider.connect('valueChanged(double)', self.onRandomErrorRangeChanged)
-    self.ROIRadiusSlider.connect('valueChanged(double)', self.onROIRadiusChanged)
+    self.doseGrowRangeSlider.connect('valueChanged(double)', self.onDoseGrowRangeChanged)
+    self.ROIRadiusXSlider.connect('valueChanged(double)', self.onROIRadiusXChanged)
+    self.ROIRadiusYSlider.connect('valueChanged(double)', self.onROIRadiusYChanged)
+    self.ROIRadiusZSlider.connect('valueChanged(double)', self.onROIRadiusZChanged)
 
   def UpdateApplyButtonState(self):
     if not self.inputDoseVolumeSelector.currentNode() or not self.referenceDoseVolumeSelector.currentNode() or not self.inputContourSelector.currentNode():
@@ -231,15 +267,24 @@ class MarginCalculatorWidget:
   def onRandomErrorRangeChanged(self, value):
     self.randomErrorRange = value
 
-  def onROIRadiusChanged(self, value):
-    self.ROIRadius = value
+  def onDoseGrowRangeChanged(self, value):
+    self.doseGrowRange = value
+
+  def onROIRadiusXChanged(self, value):
+    self.ROIRadiusX = value
+
+  def onROIRadiusYChanged(self, value):
+    self.ROIRadiusY = value
+
+  def onROIRadiusZChanged(self, value):
+    self.ROIRadiusZ = value
 
   def onApply(self):
     self.applyButton.text = "Working..."
     self.applyButton.repaint()
     slicer.app.processEvents()
     self.logic = MarginCalculatorLogic()
-    self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.referenceDoseVolumeSelector.currentNode(), self.inputContourSelector.currentNode(), self.numberOfSimulations, self.numberOfFractions, self.systematicErrorRange, self.randomErrorRange, self.ROIRadius)
+    self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.referenceDoseVolumeSelector.currentNode(), self.inputContourSelector.currentNode(), self.numberOfSimulations, self.numberOfFractions, self.systematicErrorRange, self.randomErrorRange, self.doseGrowRange, self.ROIRadiusX, self.ROIRadiusY, self.ROIRadiusZ)
     self.applyButton.text = "Calculate"
 
     marginResult = self.logic.getMarginResult()
@@ -353,36 +398,53 @@ class MarginCalculatorLogic:
   def getMarginResult(self):
     return self.__marginResult
 
-  def run(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systematicErrorRange, randomErrorRange, ROIRadius):
-    radius = ROIRadius
+  def run(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systematicErrorRange, randomErrorRange, doseGrowRange, ROIRadiusX, ROIRadiusY, ROIRadiusZ):
+    radiusX = ROIRadiusX
+    radiusY = ROIRadiusY
+    radiusZ = ROIRadiusZ
     systematicErrorRange = int(systematicErrorRange*10)
     randomErrorRange = int(randomErrorRange*10)
+    doseGrowRange = int(doseGrowRange*10)
     self.__marginResult = []
-    for i in range(1,systematicErrorRange): # systemaic error
+    for i in range(0,systematicErrorRange,5): # systemaic error
       systemError = i/10.0
-      for j in range(1,randomErrorRange): # random error
+      for j in range(0,randomErrorRange,5): # random error
         randomError = j/10.0
         D95old = 0.0
         D95 = 0.0
         P90 = 0.0
         P95 = 0.0
         P99 = 0.0
-        for k in range(1,20,2): # dose growing
-          doseGrowSize = (k/10.0 + radius)/radius
+        P90found = 0
+        P95found = 0
+        P99found = 0
+        for k in range(0,doseGrowRange,2): # dose growing
+          doseGrowSizeX = (k/10.0 + radiusX)/radiusX
+          doseGrowSizeY = (k/10.0 + radiusY)/radiusY
+          doseGrowSizeZ = (k/10.0 + radiusZ)/radiusZ
           # print systemError, randomError, doseGrowSize
-          D95 = self.computeDPH(inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSize)
+          D95 = self.computeDPH(inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSizeX, doseGrowSizeY, doseGrowSizeZ)
           #print "D95", D95
           if D95old < 0.90 and D95 >= 0.90 :
             #print "inside p90", k
             P90 = k/10.0
+            P90found = 1
           if D95old < 0.95 and D95 >= 0.95 :
             #print "inside p95", k
             P95 = k/10.0
+            P95found = 1
           if D95old < 0.99 and D95 >= 0.99 :
             #print "inside p99", k
             P99 = k/10.0
+            P99found = 1
           D95old = D95
-        print "sys, rad, P90, P95, P99:", systemError, randomError, P90, P95, P99
+        if P90found == 0:
+          P90 = 'N/A'
+        if P95found == 0:
+          P95 = 'N/A'
+        if P99found == 0:
+          P99 = 'N/A'
+        #print "sys, rad, P90, P95, P99:", systemError, randomError, P90, P95, P99
         self.__marginResult.append([systemError, randomError, P90, P95, P99])
         
   
@@ -406,7 +468,7 @@ class MarginCalculatorLogic:
     fp.write(self.marginAsCSV())
     fp.close()
   
-  def computeDPH(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSize):
+  def computeDPH(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSizeX, doseGrowSizeY, doseGrowSizeZ):
     # Step 1: morph dose
     outputDoseVolumeNode = slicer.vtkMRMLScalarVolumeNode()
     slicer.mrmlScene.AddNode(outputDoseVolumeNode)
@@ -419,9 +481,9 @@ class MarginCalculatorLogic:
     doseMorphologyNode.SetAndObserveReferenceDoseVolumeNode(referenceDoseVolumeNode)
     doseMorphologyNode.SetAndObserveOutputDoseVolumeNode(outputDoseVolumeNode)
     doseMorphologyNode.SetOperationToExpandByScaling()
-    doseMorphologyNode.SetXSize(doseGrowSize)
-    doseMorphologyNode.SetYSize(doseGrowSize)
-    doseMorphologyNode.SetZSize(doseGrowSize)
+    doseMorphologyNode.SetXSize(doseGrowSizeX)
+    doseMorphologyNode.SetYSize(doseGrowSizeY)
+    doseMorphologyNode.SetZSize(doseGrowSizeZ)
     
     doseMorphologyLogic = slicer.modules.dosemorphology.logic()
     doseMorphologyLogic.SetAndObserveDoseMorphologyNode(doseMorphologyNode)
@@ -448,12 +510,14 @@ class MarginCalculatorLogic:
     motionSimulatorNode.SetAndObserveOutputDoubleArrayNode(motionSimulatorDoubleArrayNode)
     motionSimulatorNode.SetNumberOfSimulation(numberOfSimulations)
     motionSimulatorNode.SetNumberOfFraction(numberOfFractions)
-    motionSimulatorNode.SetXSysSD(systemError)
-    motionSimulatorNode.SetYSysSD(systemError)
-    motionSimulatorNode.SetZSysSD(systemError)
-    motionSimulatorNode.SetXRdmSD(randomError)
-    motionSimulatorNode.SetYRdmSD(randomError)
-    motionSimulatorNode.SetZRdmSD(randomError)
+    motionSimulatorNode.SetSystematicErrorSD(systemError)
+    motionSimulatorNode.SetXSysSD(1)
+    motionSimulatorNode.SetYSysSD(1)
+    motionSimulatorNode.SetZSysSD(1)
+    motionSimulatorNode.SetRandomErrorSD(randomError)
+    motionSimulatorNode.SetXRdmSD(1)
+    motionSimulatorNode.SetYRdmSD(1)
+    motionSimulatorNode.SetZRdmSD(1)
     
     motionSimualtorLogic = slicer.modules.motionsimulator.logic()
     motionSimualtorLogic.SetAndObserveMotionSimulatorNode(motionSimulatorNode)
