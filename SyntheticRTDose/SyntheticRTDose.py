@@ -298,7 +298,7 @@ class SyntheticRTDoseLogic:
     print "roiCenter", roiCenter
     """
     roiSphere.SetCenter( roiCenter )
-    roiSphere.SetRadius( radius+1 )
+    roiSphere.SetRadius( radius+5 )
 
     # Determine the transform between the box and the image IJK coordinate systems
 
@@ -354,7 +354,7 @@ class SyntheticRTDoseLogic:
     
     smooth = vtk.vtkImageGaussianSmooth()
     smooth.SetInput(stencilToImage.GetOutput())
-    smooth.SetStandardDeviations(3,3,3) # place to change gradient size.
+    smooth.SetStandardDeviations(2.8,2.8,2.8) # place to change gradient size.
     smooth.SetRadiusFactors(3,3,3)
     smooth.SetDimensionality(3)
     smooth.Update()
