@@ -229,12 +229,10 @@ void qSlicerMotionSimulatorModuleWidget::setup()
   this->connect( d->MRMLNodeComboBox_StructureSet, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT( structureSetNodeChanged(vtkMRMLNode*) ) );
   this->connect( d->MRMLNodeComboBox_OutputArray, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT( outputArrayNodeChanged(vtkMRMLNode*) ) );
 
-  this->connect( d->lineEdit_SystematicErrorSD, SIGNAL(textChanged(QString)), this, SLOT(lineEditSystematicErrorSDChanged(QString)));
   this->connect( d->lineEdit_XSysSD, SIGNAL(textChanged(QString)), this, SLOT(lineEditXSysSDChanged(QString)));
   this->connect( d->lineEdit_YSysSD, SIGNAL(textChanged(QString)), this, SLOT(lineEditYSysSDChanged(QString)));
   this->connect( d->lineEdit_ZSysSD, SIGNAL(textChanged(QString)), this, SLOT(lineEditZSysSDChanged(QString)));
 
-  this->connect( d->lineEdit_RandomErrorSD, SIGNAL(textChanged(QString)), this, SLOT(lineEditRandomErrorSDChanged(QString)));
   this->connect( d->lineEdit_XRdmSD, SIGNAL(textChanged(QString)), this, SLOT(lineEditXRdmSDChanged(QString)));
   this->connect( d->lineEdit_YRdmSD, SIGNAL(textChanged(QString)), this, SLOT(lineEditYRdmSDChanged(QString)));
   this->connect( d->lineEdit_ZRdmSD, SIGNAL(textChanged(QString)), this, SLOT(lineEditZRdmSDChanged(QString)));
@@ -326,22 +324,6 @@ void qSlicerMotionSimulatorModuleWidget::outputArrayNodeChanged(vtkMRMLNode* nod
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerMotionSimulatorModuleWidget::lineEditSystematicErrorSDChanged(const QString & text)
-{
-  Q_D(qSlicerMotionSimulatorModuleWidget);
-  
-  vtkMRMLMotionSimulatorNode* paramNode = d->logic()->GetMotionSimulatorNode();
-  if (!paramNode || !this->mrmlScene())
-  {
-    return;
-  }
-
-  paramNode->DisableModifiedEventOn();
-  paramNode->SetSystematicErrorSD(text.toDouble());
-  paramNode->DisableModifiedEventOff();
-}
-
-//-----------------------------------------------------------------------------
 void qSlicerMotionSimulatorModuleWidget::lineEditXSysSDChanged(const QString & text)
 {
   Q_D(qSlicerMotionSimulatorModuleWidget);
@@ -386,22 +368,6 @@ void qSlicerMotionSimulatorModuleWidget::lineEditZSysSDChanged(const QString & t
 
   paramNode->DisableModifiedEventOn();
   paramNode->SetZSysSD(text.toDouble());
-  paramNode->DisableModifiedEventOff();
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerMotionSimulatorModuleWidget::lineEditRandomErrorSDChanged(const QString & text)
-{
-  Q_D(qSlicerMotionSimulatorModuleWidget);
-  
-  vtkMRMLMotionSimulatorNode* paramNode = d->logic()->GetMotionSimulatorNode();
-  if (!paramNode || !this->mrmlScene())
-  {
-    return;
-  }
-
-  paramNode->DisableModifiedEventOn();
-  paramNode->SetRandomErrorSD(text.toDouble());
   paramNode->DisableModifiedEventOff();
 }
 

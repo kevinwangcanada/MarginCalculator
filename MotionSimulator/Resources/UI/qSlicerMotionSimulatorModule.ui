@@ -98,17 +98,17 @@
       <enum>QFrame::StyledPanel</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="3" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Weight along LR (Systematic):</string>
+         <string>Systematic SD (LR):</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="3" column="2">
+      <item row="2" column="2">
        <widget class="QLineEdit" name="lineEdit_XSysSD">
         <property name="text">
          <string>1.0</string>
@@ -118,17 +118,17 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Weight along AP (Systematic):</string>
+         <string>Systematic SD (AP):</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="4" column="2">
+      <item row="3" column="2">
        <widget class="QLineEdit" name="lineEdit_YSysSD">
         <property name="text">
          <string>1.0</string>
@@ -138,17 +138,17 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>Weight along SI (Systematic):</string>
+         <string>Systematic SD (SI):</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="5" column="2">
+      <item row="4" column="2">
        <widget class="QLineEdit" name="lineEdit_ZSysSD">
         <property name="text">
          <string>1.0</string>
@@ -158,17 +158,17 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="5" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Weight along LR (Random):</string>
+         <string>Random SD (LR):</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="7" column="2">
+      <item row="5" column="2">
        <widget class="QLineEdit" name="lineEdit_XRdmSD">
         <property name="text">
          <string>1.0</string>
@@ -178,17 +178,17 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>Weight along AP (Random):</string>
+         <string>Random SD (AP):</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="8" column="2">
+      <item row="6" column="2">
        <widget class="QLineEdit" name="lineEdit_ZRdmSD">
         <property name="text">
          <string>1.0</string>
@@ -198,17 +198,17 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
+      <item row="7" column="0">
        <widget class="QLabel" name="label_10">
         <property name="text">
-         <string>Weight along SI (Random):</string>
+         <string>Random SD (SI):</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
-      <item row="9" column="2">
+      <item row="7" column="2">
        <widget class="QLineEdit" name="lineEdit_YRdmSD">
         <property name="text">
          <string>1.0</string>
@@ -255,46 +255,6 @@
        <widget class="QLineEdit" name="lineEdit_NumberOfFractions">
         <property name="text">
          <string>1</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLineEdit" name="lineEdit_SystematicErrorSD">
-        <property name="text">
-         <string>0.5</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_12">
-        <property name="text">
-         <string>Systematic Error SD (mm):</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>Random Error SD (mm):</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="2">
-       <widget class="QLineEdit" name="lineEdit_RandomErrorSD">
-        <property name="text">
-         <string>1.0</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

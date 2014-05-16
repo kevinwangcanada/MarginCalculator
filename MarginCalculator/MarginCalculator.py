@@ -14,7 +14,7 @@ class MarginCalculator:
     parent.dependencies = []
     parent.contributors = ["Kevin Wang (Princess Margaret Cancer Centre)"]
     parent.helpText = string.Template("""
-    Use this module to convolve a dose distribution volume. 
+    Use this module to calculate the margin required for coverage in population. 
 """).substitute({ 'a':parent.slicerWikiUrl, 'b':slicer.app.majorVersion, 'c':slicer.app.minorVersion })
     parent.acknowledgementText = """
     Supported by OCAIRO and Cancer Care Ontario.  Module implemented by Kevin Wang.
@@ -510,14 +510,12 @@ class MarginCalculatorLogic:
     motionSimulatorNode.SetAndObserveOutputDoubleArrayNode(motionSimulatorDoubleArrayNode)
     motionSimulatorNode.SetNumberOfSimulation(numberOfSimulations)
     motionSimulatorNode.SetNumberOfFraction(numberOfFractions)
-    motionSimulatorNode.SetSystematicErrorSD(systemError)
-    motionSimulatorNode.SetXSysSD(1)
-    motionSimulatorNode.SetYSysSD(1)
-    motionSimulatorNode.SetZSysSD(1)
-    motionSimulatorNode.SetRandomErrorSD(randomError)
-    motionSimulatorNode.SetXRdmSD(1)
-    motionSimulatorNode.SetYRdmSD(1)
-    motionSimulatorNode.SetZRdmSD(1)
+    motionSimulatorNode.SetXSysSD(systemError)
+    motionSimulatorNode.SetYSysSD(systemError)
+    motionSimulatorNode.SetZSysSD(systemError)
+    motionSimulatorNode.SetXRdmSD(randomError)
+    motionSimulatorNode.SetYRdmSD(randomError)
+    motionSimulatorNode.SetZRdmSD(randomError)
     
     motionSimualtorLogic = slicer.modules.motionsimulator.logic()
     motionSimualtorLogic.SetAndObserveMotionSimulatorNode(motionSimulatorNode)
