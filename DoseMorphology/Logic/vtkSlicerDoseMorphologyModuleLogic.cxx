@@ -202,6 +202,44 @@ bool vtkSlicerDoseMorphologyModuleLogic::VolumeContainsDose()
 }
 
 //---------------------------------------------------------------------------
+void vtkSlicerDoseMorphologyModuleLogic::GetVolumeNodeCenterOfMass(vtkMRMLScalarVolumeNode *volumeNode, int* centerOfMass)
+{
+  double sumValue = 0.0;
+  double sumX = 0, sumY = 0, sumZ = 0;
+
+  vtkSmartPointer<vtkImageData> imageData = volumeNode->GetImageData();
+  int extent[6];
+  int dim[3] = {0,0,0};
+  imageData->GetWholeExtent(extent);
+  imageData->GetDimensions(dim);
+  for (int zz = extent[4]; zz <= extent[5]; zz ++)
+  {
+    for (int yy = extent[2]; yy <= extent[3]; yy ++)
+    {
+      for (int xx = extent[0]; xx <= extent[1]; xx ++)
+      {
+        double voxelVal = imageData->GetScalarComponentAsDouble(xx, yy, zz, 0);
+        if (voxelVal > 0)
+        {
+          sumValue = sumValue + voxelVal;
+          sumX = sumX + xx * voxelVal;
+          sumY = sumY + yy * voxelVal;
+          sumZ = sumZ + zz * voxelVal;
+        }
+      } // for xx
+    } // for yy
+  } // for zz
+
+  if (sumValue > 0)
+  {
+    centerOfMass[0] = sumX / sumValue;
+    centerOfMass[1] = sumY / sumValue;
+    centerOfMass[2] = sumZ / sumValue;
+  }
+  return;
+}
+
+//---------------------------------------------------------------------------
 int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
 {
   double originX, originY, originZ;
@@ -236,11 +274,18 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   vtkSmartPointer<vtkImageData> tempImage = NULL;
   tempImage = inputDoseVolumeNode->GetImageData();
 
+  int centerOfMass[3] = {0,0,0};
+  this->GetVolumeNodeCenterOfMass(inputDoseVolumeNode, centerOfMass);
+
   int *dims = tempImage->GetDimensions();
   double dimsH[4];
   dimsH[0] = dims[0] - 1;
   dimsH[1] = dims[1] - 1;
   dimsH[2] = dims[2] - 1;
+  dimsH[3] = 0.;
+  dimsH[0] = centerOfMass[0];
+  dimsH[1] = centerOfMass[1];
+  dimsH[2] = centerOfMass[2];
   dimsH[3] = 0.;
 
   vtkSmartPointer<vtkMatrix4x4> ijkToRAS = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -252,6 +297,10 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   origin[0] = -0.5 * rasCorner[0];
   origin[1] = -0.5 * rasCorner[1];
   origin[2] = -0.5 * rasCorner[2];
+
+  origin[0] = - rasCorner[0];
+  origin[1] = - rasCorner[1];
+  origin[2] = - rasCorner[2];
 
   vtkSmartPointer<vtkMRMLScalarVolumeNode> tempDoseVolumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
   tempDoseVolumeNode->Copy(inputDoseVolumeNode);

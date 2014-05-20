@@ -62,6 +62,9 @@ public:
   bool VolumeContainsDose();
 
   ///
+  void GetVolumeNodeCenterOfMass(vtkMRMLScalarVolumeNode* volumeNode, int* centerOfMass);
+
+  ///
   int MorphDose();
 
 protected:
