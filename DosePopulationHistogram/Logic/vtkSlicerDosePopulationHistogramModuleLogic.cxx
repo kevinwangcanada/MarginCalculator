@@ -25,7 +25,7 @@
 #include "vtkMRMLDosePopulationHistogramNode.h"
 
 // SlicerRT includes
-#include "SlicerRtCommon.h"
+#include "MarginCalculatorCommon.h"
 
 #include "vtkMRMLMotionSimulatorDoubleArrayNode.h"
 
@@ -150,7 +150,7 @@ void vtkSlicerDosePopulationHistogramModuleLogic::RefreshDPHDoubleArrayNodesFrom
     vtkMRMLDoubleArrayNode* doubleArrayNode = vtkMRMLDoubleArrayNode::SafeDownCast(node);
     if (doubleArrayNode)
     {
-      const char* type = doubleArrayNode->GetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str());
+      const char* type = doubleArrayNode->GetAttribute(MarginCalculatorCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str());
       if (type)
       {
         this->DosePopulationHistogramNode->GetDPHDoubleArrayNodeIDs()->push_back(doubleArrayNode->GetID());
@@ -190,7 +190,7 @@ void vtkSlicerDosePopulationHistogramModuleLogic::OnMRMLSceneNodeAdded(vtkMRMLNo
     vtkMRMLDoubleArrayNode* doubleArrayNode = vtkMRMLDoubleArrayNode::SafeDownCast(node);
     if (doubleArrayNode)
     {
-      const char* type = doubleArrayNode->GetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str());
+      const char* type = doubleArrayNode->GetAttribute(MarginCalculatorCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str());
       if (type)
       {
         this->DosePopulationHistogramNode->GetDPHDoubleArrayNodeIDs()->push_back(doubleArrayNode->GetID());
@@ -459,12 +459,12 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
   {
 	outputDoubleArrayNode = vtkSmartPointer<vtkMRMLDoubleArrayNode>::New();
   }
-  std::string DPHArrayNodeName = std::string(doubleArrayNode->GetName()) + SlicerRtCommon::DVH_ARRAY_NODE_NAME_POSTFIX;
+  std::string DPHArrayNodeName = std::string(doubleArrayNode->GetName()) + MarginCalculatorCommon::DVH_ARRAY_NODE_NAME_POSTFIX;
   DPHArrayNodeName = this->GetMRMLScene()->GenerateUniqueName(DPHArrayNodeName);
   outputDoubleArrayNode->SetName(DPHArrayNodeName.c_str());
   //outputDoubleArrayNode->HideFromEditorsOff();
 
-  outputDoubleArrayNode->SetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
+  outputDoubleArrayNode->SetAttribute(MarginCalculatorCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
 
   vtkDoubleArray* doubleArray = outputDoubleArrayNode->GetArray();
   bool insertPointAtOrigin=true;
@@ -538,9 +538,9 @@ void vtkSlicerDosePopulationHistogramModuleLogic::AddDPHToSelectedChart(const ch
   chartNode->AddArray( planName, DPHArrayNodeID );
 
   // Set plot color and line style
-  const char* color = DPHArrayNode->GetAttribute(SlicerRtCommon::DVH_STRUCTURE_COLOR_ATTRIBUTE_NAME.c_str());
+  const char* color = DPHArrayNode->GetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_COLOR_ATTRIBUTE_NAME.c_str());
   chartNode->SetProperty(planName, "color", color);
-  const char* lineStyle = DPHArrayNode->GetAttribute(SlicerRtCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str());
+  const char* lineStyle = DPHArrayNode->GetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str());
   chartNode->SetProperty(planName, "linePattern", lineStyle);
 
   // Add chart to chart view

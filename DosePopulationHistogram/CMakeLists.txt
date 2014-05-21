@@ -12,7 +12,7 @@ set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
 
 set(MODULE_INCLUDE_DIRECTORIES
   ${vtkSlicerMotionSimulatorDoubleArrayModuleMRML_INCLUDE_DIRS}
-  ${SlicerRtCommon_INCLUDE_DIRS}
+  ${MarginCalculatorCommon_INCLUDE_DIRS}
   )
 
 set(MODULE_SRCS

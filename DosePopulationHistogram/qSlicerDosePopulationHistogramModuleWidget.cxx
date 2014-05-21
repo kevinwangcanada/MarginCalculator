@@ -26,7 +26,7 @@
 #include <QCheckBox>
 
 // SlicerRt includes
-#include "SlicerRtCommon.h"
+#include "MarginCalculatorCommon.h"
 #include "vtkMRMLMotionSimulatorDoubleArrayNode.h"
 
 // SlicerQt includes
@@ -404,7 +404,7 @@ void qSlicerDosePopulationHistogramModuleWidget::doseVolumeNodeChanged(vtkMRMLNo
   paramNode->SetAndObserveDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
-  if (node && !SlicerRtCommon::IsDoseVolumeNode(node))
+  if (node && !MarginCalculatorCommon::IsDoseVolumeNode(node))
   {
     d->label_NotDoseVolumeWarning->setText(tr(" Selected volume is not a dose volume!"));
   }
@@ -549,7 +549,7 @@ void qSlicerDosePopulationHistogramModuleWidget::refreshDPHTable()
     // Create checkbox
     QCheckBox* checkbox = new QCheckBox(d->tableWidget_ChartStatistics);
     checkbox->setToolTip(tr("Show/hide DVH plot of structure '%1' in selected chart").arg(
-      QString(DPHNode->GetAttribute(SlicerRtCommon::DVH_STRUCTURE_NAME_ATTRIBUTE_NAME.c_str())) ));
+      QString(DPHNode->GetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_NAME_ATTRIBUTE_NAME.c_str())) ));
     connect( checkbox, SIGNAL( stateChanged(int) ), this, SLOT( showInChartCheckStateChanged(int) ) );
 
     // Assign line style and plot name
@@ -561,36 +561,36 @@ void qSlicerDosePopulationHistogramModuleWidget::refreshDPHTable()
 
     if (numberOfStructuresWithSameName % 4 == 1)
     {
-      DPHNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str(), "dashed");
+      DPHNode->SetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str(), "dashed");
       plotName.append( " [- -]" );
     }
     else if (numberOfStructuresWithSameName % 4 == 2)
     {
-      DPHNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str(), "dotted");
+      DPHNode->SetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str(), "dotted");
       plotName.append( " [...]" );
     }
     else if (numberOfStructuresWithSameName % 4 == 3)
     {
-      DPHNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str(), "dashed-dotted");
+      DPHNode->SetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str(), "dashed-dotted");
       plotName.append( " [-.-]" );
     }
     else
     {
-      DPHNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str(), "solid");
+      DPHNode->SetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_PLOT_LINE_STYLE_ATTRIBUTE_NAME.c_str(), "solid");
     }
-    DPHNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_COLOR_ATTRIBUTE_NAME.c_str(), "blue");
+    DPHNode->SetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_COLOR_ATTRIBUTE_NAME.c_str(), "blue");
 
     // Store checkbox with the augmented structure set name and the double array ID
-    DPHNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_PLOT_NAME_ATTRIBUTE_NAME.c_str(), plotName.toLatin1());
+    DPHNode->SetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_PLOT_NAME_ATTRIBUTE_NAME.c_str(), plotName.toLatin1());
     d->ChartCheckboxToStructureSetNameMap[checkbox] = QPair<QString, QString>(plotName, DPHNode->GetID());
 
     d->tableWidget_ChartStatistics->setCellWidget(i, 0, checkbox);
 
     d->tableWidget_ChartStatistics->setItem(i, 1, new QTableWidgetItem(
-      QString(DPHNode->GetAttribute(SlicerRtCommon::DVH_STRUCTURE_PLOT_NAME_ATTRIBUTE_NAME.c_str())) ));    
+      QString(DPHNode->GetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_PLOT_NAME_ATTRIBUTE_NAME.c_str())) ));    
 
     //vtkMRMLVolumeNode* volumeNode = vtkMRMLVolumeNode::SafeDownCast( this->mrmlScene()->GetNodeByID(
-    //  DPHNode->GetAttribute(SlicerRtCommon::DVH_DOSE_VOLUME_NODE_ID_ATTRIBUTE_NAME.c_str()) ) );
+    //  DPHNode->GetAttribute(MarginCalculatorCommon::DVH_DOSE_VOLUME_NODE_ID_ATTRIBUTE_NAME.c_str()) ) );
     //if (volumeNode)
     //{
     //  d->tableWidget_ChartStatistics->setItem(i, 2, new QTableWidgetItem( QString(volumeNode->GetName()) ));    

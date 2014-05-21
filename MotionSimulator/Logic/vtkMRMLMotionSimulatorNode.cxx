@@ -23,7 +23,7 @@
 #include "vtkMRMLMotionSimulatorNode.h"
 
 // SlicerRT includes
-#include "SlicerRtCommon.h"
+#include "MarginCalculatorCommon.h"
 
 // MRML includes
 #include <vtkMRMLScene.h>
@@ -38,9 +38,9 @@
 #include <sstream>
 
 //------------------------------------------------------------------------------
-std::string vtkMRMLMotionSimulatorNode::InputDoseVolumeReferenceRole = std::string("inputDoseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
-std::string vtkMRMLMotionSimulatorNode::InputContourReferenceRole = std::string("inputContour") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
-std::string vtkMRMLMotionSimulatorNode::OutputDoubleArrayReferenceRole = std::string("outputDoubleArray") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLMotionSimulatorNode::InputDoseVolumeReferenceRole = std::string("inputDoseVolume") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLMotionSimulatorNode::InputContourReferenceRole = std::string("inputContour") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLMotionSimulatorNode::OutputDoubleArrayReferenceRole = std::string("outputDoubleArray") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
 
 //------------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLMotionSimulatorNode);

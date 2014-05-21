@@ -25,7 +25,7 @@
 #include "vtkMRMLDoseMorphologyNode.h"
 
 // SlicerRT includes
-#include "SlicerRtCommon.h"
+#include "MarginCalculatorCommon.h"
 
 // MRML includes
 //#include <vtkMRMLContourNode.h>
@@ -358,8 +358,8 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
 
   // to do .... 
   outputDoseVolumeNode->CopyOrientation( referenceDoseVolumeNode );
-  outputDoseVolumeNode->SetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str(), inputDoseVolumeNode->GetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str()));
-  outputDoseVolumeNode->SetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_UNIT_VALUE_ATTRIBUTE_NAME.c_str(), inputDoseVolumeNode->GetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_UNIT_VALUE_ATTRIBUTE_NAME.c_str()));
+  outputDoseVolumeNode->SetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str(), inputDoseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str()));
+  outputDoseVolumeNode->SetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_VALUE_ATTRIBUTE_NAME.c_str(), inputDoseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_VALUE_ATTRIBUTE_NAME.c_str()));
 
   vtkSmartPointer<vtkImageData> tempImageData = NULL;
   vtkSmartPointer<vtkImageContinuousDilate3D> dilateFilter = vtkSmartPointer<vtkImageContinuousDilate3D>::New();
@@ -393,7 +393,7 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   }
 
   outputDoseVolumeNode->SetAndObserveImageData( tempImageData );
-  outputDoseVolumeNode->SetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_VOLUME_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
+  outputDoseVolumeNode->SetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_VOLUME_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
   outputDoseVolumeNode->HideFromEditorsOff();
 
   // Create display node

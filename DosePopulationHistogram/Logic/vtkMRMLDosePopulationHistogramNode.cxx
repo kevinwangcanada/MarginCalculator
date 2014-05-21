@@ -24,7 +24,7 @@
 #include "vtkMRMLDosePopulationHistogramNode.h"
 
 // SlicerRT includes
-#include "SlicerRtCommon.h"
+#include "MarginCalculatorCommon.h"
 
 // MRML includes
 #include <vtkMRMLScene.h>
@@ -41,11 +41,11 @@
 #include <sstream>
 
 //------------------------------------------------------------------------------
-std::string vtkMRMLDosePopulationHistogramNode::DoseVolumeReferenceRole = std::string("doseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
-std::string vtkMRMLDosePopulationHistogramNode::DoubleArrayReferenceRole = std::string("doubleArray") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
-std::string vtkMRMLDosePopulationHistogramNode::ContourReferenceRole = std::string("contour") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
-std::string vtkMRMLDosePopulationHistogramNode::ChartReferenceRole = std::string("chart") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
-std::string vtkMRMLDosePopulationHistogramNode::OutputDoubleArrayReferenceRole = std::string("outputDoubleArray") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::DoseVolumeReferenceRole = std::string("doseVolume") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::DoubleArrayReferenceRole = std::string("doubleArray") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::ContourReferenceRole = std::string("contour") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::ChartReferenceRole = std::string("chart") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDosePopulationHistogramNode::OutputDoubleArrayReferenceRole = std::string("outputDoubleArray") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
 
 //------------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLDosePopulationHistogramNode);

@@ -24,7 +24,7 @@
 #include "vtkMRMLDoseMorphologyNode.h"
 
 // SlicerRT includes
-#include "SlicerRtCommon.h"
+#include "MarginCalculatorCommon.h"
 
 // MRML includes
 #include <vtkMRMLScene.h>
@@ -38,9 +38,9 @@
 #include <sstream>
 
 //------------------------------------------------------------------------------
-std::string vtkMRMLDoseMorphologyNode::ReferenceDoseVolumeReferenceRole = std::string("referenceDoseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
-std::string vtkMRMLDoseMorphologyNode::InputDoseVolumeReferenceRole = std::string("inputDoseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
-std::string vtkMRMLDoseMorphologyNode::OutputDoseVolumeReferenceRole = std::string("outputDoseVolume") + SlicerRtCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDoseMorphologyNode::ReferenceDoseVolumeReferenceRole = std::string("referenceDoseVolume") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDoseMorphologyNode::InputDoseVolumeReferenceRole = std::string("inputDoseVolume") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
+std::string vtkMRMLDoseMorphologyNode::OutputDoseVolumeReferenceRole = std::string("outputDoseVolume") + MarginCalculatorCommon::SLICERRT_REFERENCE_ROLE_ATTRIBUTE_NAME_POSTFIX;
 
 //------------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLDoseMorphologyNode);

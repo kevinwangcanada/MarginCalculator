@@ -24,7 +24,7 @@
 #include "vtkSlicerMotionSimulatorModuleLogic.h"
 
 // SlicerRT includes
-#include "SlicerRtCommon.h"
+#include "MarginCalculatorCommon.h"
 
 // MRML includes
 #include <vtkMRMLVolumeNode.h>
@@ -211,7 +211,7 @@ bool vtkSlicerMotionSimulatorModuleLogic::DoseVolumeContainsDose()
 
   vtkMRMLScalarVolumeNode* doseVolumeNode = this->MotionSimulatorNode->GetInputDoseVolumeNode();
 
-  const char* doseVolumeIdentifier = doseVolumeNode->GetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_VOLUME_IDENTIFIER_ATTRIBUTE_NAME.c_str());
+  const char* doseVolumeIdentifier = doseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_VOLUME_IDENTIFIER_ATTRIBUTE_NAME.c_str());
   if (doseVolumeIdentifier != NULL)
   {
     return true;
@@ -303,7 +303,7 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   //this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState); 
 
   // Get dose grid scaling and dose units
-  const char* doseUnitName = doseVolumeNode->GetAttribute(SlicerRtCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str());
+  const char* doseUnitName = doseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str());
 
   // Get maximum dose from dose volume
   vtkNew<vtkImageAccumulate> doseStat;
@@ -361,11 +361,11 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   //arrayNode->SetName(dvhArrayNodeName.c_str());
   //arrayNode->HideFromEditorsOff();
 
-  //outputArrayNode->SetAttribute(SlicerRtCommon::DVH_TYPE_ATTRIBUTE_NAME.c_str(), SlicerRtCommon::DVH_TYPE_ATTRIBUTE_VALUE.c_str());
-  //outputArrayNode->SetAttribute(SlicerRtCommon::DVH_DOSE_VOLUME_NODE_ID_ATTRIBUTE_NAME.c_str(), doseVolumeNode->GetID());
-  outputArrayNode->SetAttribute(SlicerRtCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
-  outputArrayNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_NAME_ATTRIBUTE_NAME.c_str(), structureName.c_str());
-  //outputArrayNode->SetAttribute(SlicerRtCommon::DVH_STRUCTURE_CONTOUR_NODE_ID_ATTRIBUTE_NAME.c_str(), contourNode->GetID());
+  //outputArrayNode->SetAttribute(MarginCalculatorCommon::DVH_TYPE_ATTRIBUTE_NAME.c_str(), SlicerRtCommon::DVH_TYPE_ATTRIBUTE_VALUE.c_str());
+  //outputArrayNode->SetAttribute(MarginCalculatorCommon::DVH_DOSE_VOLUME_NODE_ID_ATTRIBUTE_NAME.c_str(), doseVolumeNode->GetID());
+  outputArrayNode->SetAttribute(MarginCalculatorCommon::DVH_DVH_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
+  outputArrayNode->SetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_NAME_ATTRIBUTE_NAME.c_str(), structureName.c_str());
+  //outputArrayNode->SetAttribute(MarginCalculatorCommon::DVH_STRUCTURE_CONTOUR_NODE_ID_ATTRIBUTE_NAME.c_str(), contourNode->GetID());
 
   vtkDoubleArray* doubleArray = outputArrayNode->GetArray();
   doubleArray->SetNumberOfTuples(this->MotionSimulatorNode->GetNumberOfSimulation());
@@ -381,7 +381,7 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   std::tr1::normal_distribution<double> Xdistribution(0.0, xSysSD);
   std::tr1::normal_distribution<double> Ydistribution(0.0, ySysSD);
   std::tr1::normal_distribution<double> Zdistribution(0.0, zSysSD);
-
+   vtkDebugMacro("it is " << xSysWeight << " " << ySysWeight << " " << zSysWeight << " " << this->MotionSimulatorNode->GetSystematicErrorSD());
   double xRdmSD = this->MotionSimulatorNode->GetXRdmSD();
   double yRdmSD = this->MotionSimulatorNode->GetYRdmSD();
   double zRdmSD = this->MotionSimulatorNode->GetZRdmSD();
@@ -393,7 +393,7 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   { 
     vtkSmartPointer<vtkImageData> baseImageData = NULL;
     
-	// Generate systematic error for all fractions, it stays the same over all fractions
+    // Generate systematic error for all fractions, it stays the same over all fractions
     double xSys = Xdistribution(eng);
     double ySys = Ydistribution(eng);
     double zSys = Zdistribution(eng);

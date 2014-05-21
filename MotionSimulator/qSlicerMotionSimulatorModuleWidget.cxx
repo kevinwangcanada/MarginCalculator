@@ -23,7 +23,7 @@
 #include <QDebug>
 
 //
-#include <SlicerRtCommon.h>
+#include <MarginCalculatorCommon.h>
 
 // SlicerQt includes
 #include "qSlicerMotionSimulatorModuleWidget.h"
@@ -275,7 +275,7 @@ void qSlicerMotionSimulatorModuleWidget::doseVolumeNodeChanged(vtkMRMLNode* node
   paramNode->SetAndObserveInputDoseVolumeNode(vtkMRMLScalarVolumeNode::SafeDownCast(node));
   paramNode->DisableModifiedEventOff();
 
-  if (node && !SlicerRtCommon::IsDoseVolumeNode(node))
+  if (node && !MarginCalculatorCommon::IsDoseVolumeNode(node))
   {
     d->label_NotDoseVolumeWarning->setText(tr(" Selected volume is not a dose volume!"));
   }

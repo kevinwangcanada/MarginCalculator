@@ -1,5 +1,5 @@
-#ifndef __SlicerRtCommon_h
-#define __SlicerRtCommon_h
+#ifndef __MarginCalculatorCommon_h
+#define __MarginCalculatorCommon_h
 
 // STD includes
 #include <cstdlib>
@@ -22,7 +22,7 @@
 
 class vtkMRMLNode;
 
-class SlicerRtCommon
+class MarginCalculatorCommon
 {
 public:
   //----------------------------------------------------------------------------
