@@ -33,7 +33,7 @@ include(${Slicer_USE_FILE})
 OPTION(MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES "Enable the building of work-in-progress, experimental modules." OFF)
 mark_as_advanced(MARGINCALCULATOR_ENABLE_EXPERIMENTAL_MODULES)
 
-add_subdirectory(SlicerRtCommon)
+add_subdirectory(MarginCalculatorCommon)
 
 add_subdirectory(MotionSimulatorDoubleArray)
 add_subdirectory(MotionSimulator)
