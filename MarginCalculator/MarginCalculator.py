@@ -533,7 +533,7 @@ class MarginCalculatorLogic:
     slicer.mrmlScene.AddNode(outputDoubleArrayNode)
     
     dosePopulationHistogramNode.SetAndObserveDoubleArrayNode(motionSimulatorDoubleArrayNode)
-    dosePopulationHistogramNode.SetAndObserveDoseVolumeNode(outputDoseVolumeNode)
+    dosePopulationHistogramNode.SetAndObserveDoseVolumeNode(inputDoseVolumeNode)
     dosePopulationHistogramNode.SetAndObserveContourNode(inputContourNode)
     dosePopulationHistogramNode.SetAndObserveOutputDoubleArrayNode(outputDoubleArrayNode)
     dosePopulationHistogramNode.SetUseDoseOptionToD98()
