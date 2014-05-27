@@ -349,8 +349,10 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   vtkSmartPointer<vtkImageReslice> reslice = vtkSmartPointer<vtkImageReslice>::New();
   reslice->SetInput(inputDoseVolumeNode->GetImageData());
   reslice->SetOutputOrigin(0, 0, 0);
-  reslice->SetOutputSpacing(1, 1, 1);
-  reslice->SetOutputExtent(0, dimensions[0]-1, 0, dimensions[1]-1, 0, dimensions[2]-1);
+  //reslice->SetOutputSpacing(1, 1, 1);
+  //reslice->SetOutputExtent(0, dimensions[0]-1, 0, dimensions[1]-1, 0, dimensions[2]-1);
+  reslice->SetOutputSpacing(0.2/spacingX, 0.2/spacingY, 0.2/spacingZ);
+  reslice->SetOutputExtent(0, dimensions[0]*spacingX/0.2-1, 0, dimensions[1]*spacingY/0.2-1, 0, dimensions[2]*spacingZ/0.2-1);
   reslice->SetResliceTransform(outputResliceTransform);
   reslice->SetInterpolationModeToCubic();
   reslice->Update();
@@ -369,9 +371,9 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   //double spacing[3] = {0,0,0};
   //volumeNode->GetSpacing(spacing);
   int kernelSize[3] = {1,1,1};
-  kernelSize[0] = (int)(this->GetDoseMorphologyNode()->GetXSize()*2/spacingX2);
-  kernelSize[1] = (int)(this->GetDoseMorphologyNode()->GetYSize()*2/spacingY2);
-  kernelSize[2] = (int)(this->GetDoseMorphologyNode()->GetZSize()*2/spacingZ2);
+  kernelSize[0] = (int)(this->GetDoseMorphologyNode()->GetXSize()*2*spacingX/0.2+1);
+  kernelSize[1] = (int)(this->GetDoseMorphologyNode()->GetYSize()*2*spacingY/0.2+1);
+  kernelSize[2] = (int)(this->GetDoseMorphologyNode()->GetZSize()*2*spacingZ/0.2+1);
   //int op = this->DoseMorphologyNode->GetOperation();
   switch (op) 
   {
@@ -388,7 +390,16 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
       dilateFilter->SetInput(tempImage);
       dilateFilter->SetKernelSize(kernelSize[0], kernelSize[1], kernelSize[2]);
       dilateFilter->Update();
-      tempImageData = dilateFilter->GetOutput();
+      //tempImageData = dilateFilter->GetOutput();
+
+      vtkSmartPointer<vtkImageReslice> reslice2 = vtkSmartPointer<vtkImageReslice>::New();
+      reslice2->SetInput(dilateFilter->GetOutput());
+      reslice2->SetOutputOrigin(0, 0, 0);
+      reslice2->SetOutputSpacing(1, 1, 1);
+      reslice2->SetOutputExtent(0, dimensions[0]-1, 0, dimensions[1]-1, 0, dimensions[2]-1);
+      reslice2->SetInterpolationModeToCubic();
+      reslice2->Update();
+      tempImageData = reslice2->GetOutput();
       break;
   }
 
