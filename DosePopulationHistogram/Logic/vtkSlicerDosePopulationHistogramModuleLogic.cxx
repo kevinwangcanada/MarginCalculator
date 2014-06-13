@@ -313,8 +313,12 @@ void vtkSlicerDosePopulationHistogramModuleLogic::GetStencilForContour(vtkMRMLSc
   }
 
   // Create stencil for structure  
-  vtkNew<vtkImageToImageStencil> stencil;
+  vtkSmartPointer<vtkImageToImageStencil> stencil = vtkSmartPointer<vtkImageToImageStencil>::New();
+#if (VTK_MAJOR_VERSION <= 5)
   stencil->SetInput(indexedLabelmap);
+#else
+  stencil->SetInputData(indexedLabelmap);
+#endif
   stencil->ThresholdByUpper(0.5);
   stencil->Update();
   structureStencil->DeepCopy(stencil->GetOutput());
@@ -349,7 +353,11 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
 
   // Get maximum dose from dose volume
   vtkNew<vtkImageAccumulate> doseStat;
+#if (VTK_MAJOR_VERSION <= 5)
   doseStat->SetInput(doseVolumeNode->GetImageData());
+#else
+  doseStat->SetInputData(doseVolumeNode->GetImageData());
+#endif
   doseStat->Update();
   double maxDose = doseStat->GetMax()[0];
   double startValue = 0.1, stepSize = 0.2;
@@ -357,8 +365,13 @@ void vtkSlicerDosePopulationHistogramModuleLogic::ComputeDPH()
 
   // Get min dose from dose volume
   vtkSmartPointer<vtkImageAccumulate> structureStat = vtkSmartPointer<vtkImageAccumulate>::New();
+#if (VTK_MAJOR_VERSION <= 5)
   structureStat->SetInput(resampledDoseVolume);
   structureStat->SetStencil(structureStencil);
+#else
+  structureStat->SetInputData(resampledDoseVolume);
+  structureStat->SetStencilData(structureStencil);
+#endif
   structureStat->SetComponentExtent(0,numSamples-1,0,0,0,0);
   structureStat->SetComponentOrigin(startValue,0,0);
   structureStat->SetComponentSpacing(stepSize,1,1);

@@ -275,7 +275,11 @@ void vtkSlicerMotionSimulatorModuleLogic::GetStencilForContour(vtkMRMLScalarVolu
 
   // Create stencil for structure  
   vtkNew<vtkImageToImageStencil> stencil;
+#if (VTK_MAJOR_VERSION <= 5)
   stencil->SetInput(indexedLabelmap);
+#else
+  stencil->SetInputData(indexedLabelmap);
+#endif
   stencil->ThresholdByUpper(0.5);
   stencil->Update();
   structureStencil->DeepCopy(stencil->GetOutput());
@@ -307,7 +311,11 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
 
   // Get maximum dose from dose volume
   vtkNew<vtkImageAccumulate> doseStat;
+#if (VTK_MAJOR_VERSION <= 5)
   doseStat->SetInput(doseVolumeNode->GetImageData());
+#else
+  doseStat->SetInputData(doseVolumeNode->GetImageData());
+#endif
   doseStat->Update();
   double maxDose = doseStat->GetMax()[0];
   double minDose = doseStat->GetMin()[0];
@@ -409,7 +417,11 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
     transform->Translate(x, y, z);
 
     vtkSmartPointer<vtkImageReslice> reslice = vtkSmartPointer<vtkImageReslice>::New();
+#if (VTK_MAJOR_VERSION <= 5)
     reslice->SetInput(resampledDoseVolume);
+#else
+    reslice->SetInputData(resampledDoseVolume);
+#endif
     reslice->SetInformationInput(resampledDoseVolume);
     reslice->SetResliceTransform(transform);
     reslice->SetInterpolationModeToLinear();
@@ -434,7 +446,11 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
         transform->Translate(x, y, z);
       
         vtkSmartPointer<vtkImageReslice> reslice = vtkSmartPointer<vtkImageReslice>::New();
+#if (VTK_MAJOR_VERSION <= 5)
         reslice->SetInput(resampledDoseVolume);
+#else
+        reslice->SetInputData(resampledDoseVolume);
+#endif
         reslice->SetInformationInput(resampledDoseVolume);
         reslice->SetResliceTransform(transform);
         reslice->UpdateWholeExtent();
@@ -443,8 +459,13 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
         //translatedDoseVolume = reslice->GetOutput();
       
         vtkSmartPointer<vtkImageMathematics> adder = vtkSmartPointer<vtkImageMathematics>::New();
+#if (VTK_MAJOR_VERSION <= 5)
         adder->SetInput1(baseImageData);
         adder->SetInput2(reslice->GetOutput());
+#else
+        adder->SetInput1Data(baseImageData);
+        adder->SetInput2Data(reslice->GetOutput());
+#endif
         adder->SetOperationToAdd();
         adder->Update();
          
@@ -452,7 +473,11 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
       }
     
       vtkSmartPointer<vtkImageMathematics> MultiplyFilter1 = vtkSmartPointer<vtkImageMathematics>::New();
+#if (VTK_MAJOR_VERSION <= 5)
       MultiplyFilter1->SetInput(baseImageData);
+#else
+      MultiplyFilter1->SetInputData(baseImageData);
+#endif
       MultiplyFilter1->SetConstantK(1./this->MotionSimulatorNode->GetNumberOfFraction());
       MultiplyFilter1->SetOperationToMultiplyByK();
       MultiplyFilter1->Update();
@@ -460,8 +485,13 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
     }
     
     vtkSmartPointer<vtkImageAccumulate> structureStat = vtkSmartPointer<vtkImageAccumulate>::New();
+#if (VTK_MAJOR_VERSION <= 5)
     structureStat->SetInput(baseImageData);
     structureStat->SetStencil(structureStencil);
+#else
+    structureStat->SetInputData(baseImageData);
+    structureStat->SetStencilData(structureStencil);
+#endif
     structureStat->SetComponentExtent(0,numSamples-1,0,0,0,0);
     structureStat->SetComponentOrigin(startValue,0,0);
     structureStat->SetComponentSpacing(stepSize,1,1);

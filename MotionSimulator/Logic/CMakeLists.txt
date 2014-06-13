@@ -19,7 +19,7 @@ set(${KIT}_SRCS
 set(${KIT}_TARGET_LIBRARIES
   vtkMarginCalculatorCommon
   vtkSlicer${MODULE_NAME}DoubleArrayModuleMRML
-  ${ITK_LIBRARIES}
+  ${VTK_LIBRARIES}
   )
 
 #-----------------------------------------------------------------------------

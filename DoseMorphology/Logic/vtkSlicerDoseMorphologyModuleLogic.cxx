@@ -210,7 +210,11 @@ void vtkSlicerDoseMorphologyModuleLogic::GetVolumeNodeCenterOfMass(vtkMRMLScalar
   vtkSmartPointer<vtkImageData> imageData = volumeNode->GetImageData();
   int extent[6];
   int dim[3] = {0,0,0};
+#if (VTK_MAJOR_VERSION <= 5)
   imageData->GetWholeExtent(extent);
+#else
+  imageData->GetExtent(extent);
+#endif
   imageData->GetDimensions(dim);
   for (int zz = extent[4]; zz <= extent[5]; zz ++)
   {
@@ -347,7 +351,11 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   outputResliceTransform->Inverse();
 
   vtkSmartPointer<vtkImageReslice> reslice = vtkSmartPointer<vtkImageReslice>::New();
+#if (VTK_MAJOR_VERSION <= 5)
   reslice->SetInput(inputDoseVolumeNode->GetImageData());
+#else
+  reslice->SetInputData(inputDoseVolumeNode->GetImageData());
+#endif
   reslice->SetOutputOrigin(0, 0, 0);
   //reslice->SetOutputSpacing(1, 1, 1);
   //reslice->SetOutputExtent(0, dimensions[0]-1, 0, dimensions[1]-1, 0, dimensions[2]-1);
@@ -387,13 +395,21 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
       tempImageData = tempImage; //resliceFilter->GetOutput();
       break;
     case SLICERRT_EXPAND_BY_DILATION:
+#if (VTK_MAJOR_VERSION <= 5)
       dilateFilter->SetInput(tempImage);
+#else
+      dilateFilter->SetInputData(tempImage);
+#endif
       dilateFilter->SetKernelSize(kernelSize[0], kernelSize[1], kernelSize[2]);
       dilateFilter->Update();
       //tempImageData = dilateFilter->GetOutput();
 
       vtkSmartPointer<vtkImageReslice> reslice2 = vtkSmartPointer<vtkImageReslice>::New();
+#if (VTK_MAJOR_VERSION <= 5)
       reslice2->SetInput(dilateFilter->GetOutput());
+#else
+      reslice2->SetInputData(dilateFilter->GetOutput());
+#endif
       reslice2->SetOutputOrigin(0, 0, 0);
       reslice2->SetOutputSpacing(1, 1, 1);
       reslice2->SetOutputExtent(0, dimensions[0]-1, 0, dimensions[1]-1, 0, dimensions[2]-1);
