@@ -163,6 +163,26 @@ class MarginCalculatorWidget:
     self.randomErrorRangeSlider.value = 0.5
     self.marginCalculationFormLayout.addRow("Random Error Range (mm): ", self.randomErrorRangeSlider)
 
+    self.doseGrowingOptions = ("Dilation","Scaling")
+    #
+    #Initialization
+    #
+    self.groupBoxDoseGrow = qt.QGroupBox("Dose Growing Technique")
+    self.groupBoxLayout = qt.QHBoxLayout(self.groupBoxDoseGrow)
+    self.marginCalculationFormLayout.addRow(self.groupBoxDoseGrow)
+
+    #
+    # layout selection
+    #
+    for doseGrowingOption in self.doseGrowingOptions:
+      doseGrowingOptionButton = qt.QRadioButton(doseGrowingOption)
+      doseGrowingOptionButton.connect('clicked()', lambda dgo=doseGrowingOption: self.selectDoseGrowingOption(dgo))
+      self.groupBoxLayout.addWidget(doseGrowingOptionButton)
+      if doseGrowingOption == "Dilation":
+        doseGrowingOptionButton.checked = True
+      self.doseGrowingOption = "Dilation"
+    #self.groupBoxLayout.addRow("Layout", layoutHolder)
+
     # Dose growing range slider
     self.doseGrowRangeSlider = ctk.ctkSliderWidget()
     self.doseGrowRangeSlider.decimals = 1
@@ -267,6 +287,11 @@ class MarginCalculatorWidget:
   def onRandomErrorRangeChanged(self, value):
     self.randomErrorRange = value
 
+  def selectDoseGrowingOption(self,doseGrowingOption):
+    """Keep track of the currently selected layout and trigger an update"""
+    # print doseGrowingOption
+    self.doseGrowingOption = doseGrowingOption
+
   def onDoseGrowRangeChanged(self, value):
     self.doseGrowRange = value
 
@@ -284,7 +309,7 @@ class MarginCalculatorWidget:
     self.applyButton.repaint()
     slicer.app.processEvents()
     self.logic = MarginCalculatorLogic()
-    self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.referenceDoseVolumeSelector.currentNode(), self.inputContourSelector.currentNode(), self.numberOfSimulations, self.numberOfFractions, self.systematicErrorRange, self.randomErrorRange, self.doseGrowRange, self.ROIRadiusX, self.ROIRadiusY, self.ROIRadiusZ)
+    self.logic.run(self.inputDoseVolumeSelector.currentNode(), self.referenceDoseVolumeSelector.currentNode(), self.inputContourSelector.currentNode(), self.numberOfSimulations, self.numberOfFractions, self.systematicErrorRange, self.randomErrorRange, self.doseGrowRange, self.ROIRadiusX, self.ROIRadiusY, self.ROIRadiusZ, self.doseGrowingOption)
     self.applyButton.text = "Calculate"
 
     marginResult = self.logic.getMarginResult()
@@ -398,7 +423,7 @@ class MarginCalculatorLogic:
   def getMarginResult(self):
     return self.__marginResult
 
-  def run(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systematicErrorRange, randomErrorRange, doseGrowRange, ROIRadiusX, ROIRadiusY, ROIRadiusZ):
+  def run(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systematicErrorRange, randomErrorRange, doseGrowRange, ROIRadiusX, ROIRadiusY, ROIRadiusZ, doseGrowOption):
     radiusX = ROIRadiusX
     radiusY = ROIRadiusY
     radiusZ = ROIRadiusZ
@@ -419,11 +444,14 @@ class MarginCalculatorLogic:
         P95found = 0
         P99found = 0
         for k in range(0,doseGrowRange,2): # dose growing
-          doseGrowSizeX = (k/10.0 + radiusX)/radiusX
-          doseGrowSizeY = (k/10.0 + radiusY)/radiusY
-          doseGrowSizeZ = (k/10.0 + radiusZ)/radiusZ
+          if doseGrowOption == "Dilation":
+            pass
+          elif doseGrowOption == "Scaling":
+            doseGrowSizeX = (k/10.0 + radiusX)/radiusX
+            doseGrowSizeY = (k/10.0 + radiusY)/radiusY
+            doseGrowSizeZ = (k/10.0 + radiusZ)/radiusZ
           # print systemError, randomError, doseGrowSize
-          D95 = self.computeDPH(inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSizeX, doseGrowSizeY, doseGrowSizeZ)
+          D95 = self.computeDPH(inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSizeX, doseGrowSizeY, doseGrowSizeZ, doseGrowOption)
           #print "D95", D95
           if D95old < 0.90 and D95 >= 0.90 :
             #print "inside p90", k
@@ -468,7 +496,7 @@ class MarginCalculatorLogic:
     fp.write(self.marginAsCSV())
     fp.close()
   
-  def computeDPH(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSizeX, doseGrowSizeY, doseGrowSizeZ):
+  def computeDPH(self, inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSizeX, doseGrowSizeY, doseGrowSizeZ, doseGrowOption):
     # Step 1: morph dose
     outputDoseVolumeNode = slicer.vtkMRMLScalarVolumeNode()
     slicer.mrmlScene.AddNode(outputDoseVolumeNode)
@@ -480,7 +508,10 @@ class MarginCalculatorLogic:
     doseMorphologyNode.SetAndObserveInputDoseVolumeNode(inputDoseVolumeNode)
     doseMorphologyNode.SetAndObserveReferenceDoseVolumeNode(referenceDoseVolumeNode)
     doseMorphologyNode.SetAndObserveOutputDoseVolumeNode(outputDoseVolumeNode)
-    doseMorphologyNode.SetOperationToExpandByScaling()
+    if doseGrowOption == "Dilation":
+      doseMorphologyNode.SetOperationToExpandByDilation()
+    elif doseGrowOption == "Scaling":
+      doseMorphologyNode.SetOperationToExpandByScaling()
     doseMorphologyNode.SetXSize(doseGrowSizeX)
     doseMorphologyNode.SetYSize(doseGrowSizeY)
     doseMorphologyNode.SetZSize(doseGrowSizeZ)
