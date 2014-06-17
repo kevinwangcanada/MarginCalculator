@@ -45,9 +45,9 @@ class MarginCalculatorWidget:
     self.systematicErrorRange = 0.5
     self.randomErrorRange = 0.5
     self.doseGrowRange = 5
-    self.ROIXRadius = 10
-    self.ROIYRadius = 10
-    self.ROIZRadius = 10
+    self.ROIRadiusX = 10
+    self.ROIRadiusY = 10
+    self.ROIRadiusZ = 10
     if not parent:
       self.setup()
       self.parent.show()
@@ -445,7 +445,9 @@ class MarginCalculatorLogic:
         P99found = 0
         for k in range(0,doseGrowRange,2): # dose growing
           if doseGrowOption == "Dilation":
-            pass
+            doseGrowSizeX = k/10.0
+            doseGrowSizeY = k/10.0
+            doseGrowSizeZ = k/10.0
           elif doseGrowOption == "Scaling":
             doseGrowSizeX = (k/10.0 + radiusX)/radiusX
             doseGrowSizeY = (k/10.0 + radiusY)/radiusY
