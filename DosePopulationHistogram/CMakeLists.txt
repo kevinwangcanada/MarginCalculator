@@ -32,6 +32,7 @@ set(MODULE_UI_SRCS
 )
 
 set(MODULE_TARGET_LIBRARIES
+  vtkMarginCalculatorCommon
   vtkSlicer${MODULE_NAME}ModuleLogic
   )
 

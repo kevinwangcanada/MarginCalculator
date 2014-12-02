@@ -24,8 +24,8 @@
 #include "vtkSlicerDoseMorphologyModuleLogic.h"
 #include "vtkMRMLDoseMorphologyNode.h"
 
-// SlicerRt includes
-#include "SlicerRtCommon.h"
+// MarginCal includes
+#include "MarginCalculatorCommon.h"
 
 // MRML includes
 #include <vtkMRMLCoreTestingMacros.h>
@@ -341,14 +341,14 @@ int volumeDifferenceToleranceVoxel = 0.0;
 
   // use vtkimagedifferenct
   vtkSmartPointer<vtkImageMathematics> difference = vtkSmartPointer<vtkImageMathematics>::New();
-  difference->SetInput1(outputDoseVolumeNode->GetImageData());
-  difference->SetInput2(baselineDoseVolumeNode->GetImageData());
+  difference->SetInput1Data(outputDoseVolumeNode->GetImageData());
+  difference->SetInput2Data(baselineDoseVolumeNode->GetImageData());
   difference->SetOperationToSubtract();
   difference->Update();
 
   // use vtkimageaccumulate to do histogram
   vtkSmartPointer<vtkImageAccumulate> histogram = vtkSmartPointer<vtkImageAccumulate>::New();
-  histogram->SetInput(difference->GetOutput());
+  histogram->SetInputConnection(difference->GetOutputPort());
   histogram->IgnoreZeroOn();
   histogram->Update();
   

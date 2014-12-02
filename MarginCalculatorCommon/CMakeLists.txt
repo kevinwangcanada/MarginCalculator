@@ -15,11 +15,19 @@ SET (MarginCalculatorCommon_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${Slicer_Li
 
 set(lib_name ${PROJECT_NAME})
 SET (MarginCalculatorCommon_LIBS ${MarginCalculatorCommon_LIBS}
+  MRMLCore
   )
 
 INCLUDE_DIRECTORIES( ${MarginCalculatorCommon_INCLUDE_DIRS} )
-ADD_LIBRARY(${lib_name} STATIC ${MarginCalculatorCommon_SRCS})
+ADD_LIBRARY(${lib_name} ${MarginCalculatorCommon_SRCS})
 TARGET_LINK_LIBRARIES( ${lib_name} ${MarginCalculatorCommon_LIBS} )
+
+# Set loadable modules output
+set_target_properties(${lib_name} PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_BIN_DIR}"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_LIB_DIR}"
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_LIB_DIR}"
+  )
 
 IF (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND NOT WIN32)
   SET_TARGET_PROPERTIES(${lib_name} PROPERTIES COMPILE_FLAGS "-fPIC")
