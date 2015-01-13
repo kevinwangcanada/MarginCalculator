@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <string>
 
+#include "vtkMarginCalculatorCommonWin32Header.h"
+
 #define EPSILON 0.0001
 
 #define UNUSED_VARIABLE(a) ((void) a)
@@ -22,7 +24,8 @@
 
 class vtkMRMLNode;
 
-class MarginCalculatorCommon
+/// \ingroup MarginCalculatorCommon
+class VTK_MARGINCALCULATORCOMMON_EXPORT MarginCalculatorCommon
 {
 public:
   //----------------------------------------------------------------------------

@@ -1,17 +1,28 @@
 project(vtkMarginCalculatorCommon)
 
 # --------------------------------------------------------------------------
+# Configure headers
+# --------------------------------------------------------------------------
+set(configure_header_file vtkMarginCalculatorCommonConfigure.h)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/${configure_header_file}.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${configure_header_file}
+  )
+
+# --------------------------------------------------------------------------
 # Sources
+# --------------------------------------------------------------------------
 
 SET (MarginCalculatorCommon_SRCS 
   MarginCalculatorCommon.cxx
   MarginCalculatorCommon.h
   )
 
-SET (MarginCalculatorCommon_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${Slicer_Libs_INCLUDE_DIRS} CACHE INTERNAL "" FORCE)
+SET (MarginCalculatorCommon_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${Slicer_Libs_INCLUDE_DIRS} CACHE INTERNAL "" FORCE)
 
 # --------------------------------------------------------------------------
 # Build the library
+# --------------------------------------------------------------------------
 
 set(lib_name ${PROJECT_NAME})
 SET (MarginCalculatorCommon_LIBS ${MarginCalculatorCommon_LIBS}
