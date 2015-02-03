@@ -380,22 +380,34 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   doubleArray->SetNumberOfComponents(5);
   int outputArrayIndex=0;
 
-  std::tr1::mt19937 eng;  
-  eng.seed(time(NULL));
-
   double xSysSD = this->MotionSimulatorNode->GetXSysSD();
   double ySysSD = this->MotionSimulatorNode->GetYSysSD();
   double zSysSD = this->MotionSimulatorNode->GetZSysSD();
-  std::tr1::normal_distribution<double> Xdistribution(0.0, xSysSD);
-  std::tr1::normal_distribution<double> Ydistribution(0.0, ySysSD);
-  std::tr1::normal_distribution<double> Zdistribution(0.0, zSysSD);
-   vtkDebugMacro("it is " << xSysWeight << " " << ySysWeight << " " << zSysWeight << " " << this->MotionSimulatorNode->GetSystematicErrorSD());
   double xRdmSD = this->MotionSimulatorNode->GetXRdmSD();
   double yRdmSD = this->MotionSimulatorNode->GetYRdmSD();
   double zRdmSD = this->MotionSimulatorNode->GetZRdmSD();
+  vtkDebugMacro("it is " << xSysWeight << " " << ySysWeight << " " << zSysWeight << " " << this->MotionSimulatorNode->GetSystematicErrorSD());
+
+#ifdef WIN32
+  std::tr1::mt19937 eng;  
+  eng.seed(time(NULL));
+
+  std::tr1::normal_distribution<double> Xdistribution(0.0, xSysSD);
+  std::tr1::normal_distribution<double> Ydistribution(0.0, ySysSD);
+  std::tr1::normal_distribution<double> Zdistribution(0.0, zSysSD);
   std::tr1::normal_distribution<double> Xdistribution2(0.0, xRdmSD);
   std::tr1::normal_distribution<double> Ydistribution2(0.0, yRdmSD);
   std::tr1::normal_distribution<double> Zdistribution2(0.0, zRdmSD);
+#else
+  std::default_random_engine eng;
+
+  std::normal_distribution<double> Xdistribution(0.0, xSysSD);
+  std::normal_distribution<double> Ydistribution(0.0, ySysSD);
+  std::normal_distribution<double> Zdistribution(0.0, zSysSD);
+  std::normal_distribution<double> Xdistribution2(0.0, xRdmSD);
+  std::normal_distribution<double> Ydistribution2(0.0, yRdmSD);
+  std::normal_distribution<double> Zdistribution2(0.0, zRdmSD);
+#endif
 
   for (int i = 0; i<this->MotionSimulatorNode->GetNumberOfSimulation(); i++)
   { 
