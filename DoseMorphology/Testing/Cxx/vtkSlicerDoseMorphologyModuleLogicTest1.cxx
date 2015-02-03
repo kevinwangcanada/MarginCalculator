@@ -13,14 +13,14 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 
-  This file was originally developed by Kevin Wang, Radiation Medicine Program, 
-  University Health Network and was supported by Cancer Care Ontario (CCO)'s ACRU program 
+  This file was originally developed by Kevin Wang, Techna Institute, UHN 
+  and was supported by Cancer Care Ontario (CCO)'s ACRU program 
   with funds provided by the Ontario Ministry of Health and Long-Term Care
   and Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).
 
 ==============================================================================*/
 
-// ContourMorphology includes
+// DoseMorphology includes
 #include "vtkSlicerDoseMorphologyModuleLogic.h"
 #include "vtkMRMLDoseMorphologyNode.h"
 
@@ -45,6 +45,11 @@
 #include <vtkImageData.h>
 #include <vtkImageAccumulate.h>
 #include <vtkImageMathematics.h>
+
+// ITK includes
+#if ITK_VERSION_MAJOR > 3
+  #include "itkFactoryRegistration.h"
+#endif
 
 // VTKSYS includes
 #include <vtksys/SystemTools.hxx>
@@ -220,6 +225,9 @@ int volumeDifferenceToleranceVoxel = 0.0;
   {
     volumeDifferenceToleranceVoxel = MIN_VOLUME_DIFFERENCE_TOLERANCE_VOXEL;
   }
+
+  // Make sure NRRD reading works
+  itk::itkFactoryRegistration();
 
   // Create scene
   vtkSmartPointer<vtkMRMLScene> mrmlScene = vtkSmartPointer<vtkMRMLScene>::New();

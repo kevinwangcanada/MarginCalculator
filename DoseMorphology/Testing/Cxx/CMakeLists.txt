@@ -75,7 +75,7 @@ TEST_WITH_DATA(
   RTDose_ExpandByDilation_Baseline.nrrd
   ${TEMP}/TestScene_ContourMorphology_EclipseProstate.mrml
   ExpandByDilation
-  5.0
+  1.0
   100.0
 )
 set_tests_properties(vtkSlicerDoseMorphologyModuleLogicTest_EclipseProstate_ExpandByDilation 

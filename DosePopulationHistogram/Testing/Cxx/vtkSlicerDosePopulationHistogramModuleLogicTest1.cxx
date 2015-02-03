@@ -13,20 +13,24 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 
-  This file was originally developed by Csaba Pinter, PerkLab, Queen's University
+  This file was originally developed by Kevin Wang, Techna Institute, UHN
   and was supported through the Applied Cancer Research Unit program of Cancer Care
-  Ontario with funds provided by the Ontario Ministry of Health and Long-Term Care
+  Ontario with funds provided by the Ontario Ministry of Health and Long-Term Care 
+  and Ontario Consortium for Adaptive Interventions in Radiation Oncology (OCAIRO).
 
 ==============================================================================*/
 
-// DoseVolumeHistogram includes
+// DosePopulationHistogram includes
 #include "vtkSlicerDosePopulationHistogramModuleLogic.h"
 #include "vtkMRMLDosePopulationHistogramNode.h"
 
+// MarginCal includes
+#include "MarginCalculatorCommon.h"
+
 // SlicerRt includes
-#include "SlicerRtCommon.h"
-#include "vtkMRMLContourNode.h"
-#include "vtkMRMLContourHierarchyNode.h"
+//#include "SlicerRtCommon.h"
+//#include "vtkMRMLContourNode.h"
+//#include "vtkMRMLContourHierarchyNode.h"
 
 // MRML includes
 #include <vtkMRMLCoreTestingMacros.h>
@@ -38,6 +42,7 @@
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLChartNode.h>
 #include <vtkMRMLColorTableNode.h>
+#include <vtkMRMLScene.h>
 
 // VTK includes
 #include <vtkDoubleArray.h>
@@ -47,6 +52,11 @@
 #include <vtkImageData.h>
 #include <vtkImageAccumulate.h>
 #include <vtkLookupTable.h>
+
+// ITK includes
+#if ITK_VERSION_MAJOR > 3
+  #include "itkFactoryRegistration.h"
+#endif
 
 // VTKSYS includes
 #include <vtksys/SystemTools.hxx>
@@ -282,6 +292,9 @@ int vtkSlicerDoseVolumeHistogramModuleLogicTest1( int argc, char * argv[] )
     metricDifferenceThreshold = EPSILON;
   }
 
+  // Make sure NRRD reading works
+  itk::itkFactoryRegistration();
+
   // Create scene
   vtkSmartPointer<vtkMRMLScene> mrmlScene = vtkSmartPointer<vtkMRMLScene>::New();
 
@@ -314,7 +327,7 @@ int vtkSlicerDoseVolumeHistogramModuleLogicTest1( int argc, char * argv[] )
     std::string value = attributeStr.substr(colonIndex + 1);
     doseScalarVolumeNode->SetAttribute(name.c_str(), value.c_str());
 
-    if (SlicerRtCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.compare(name) == 0)
+    if (MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.compare(name) == 0)
     {
       doseUnitName = value;
     }
