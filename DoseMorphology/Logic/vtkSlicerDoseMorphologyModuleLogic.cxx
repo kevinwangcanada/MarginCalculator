@@ -278,46 +278,50 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   vtkSmartPointer<vtkImageData> tempImage = NULL;
   tempImage = inputDoseVolumeNode->GetImageData();
 
-  int centerOfMass[3] = {0,0,0};
-  this->GetVolumeNodeCenterOfMass(inputDoseVolumeNode, centerOfMass);
-
-  int *dims = tempImage->GetDimensions();
   double dimsH[4];
+  double rasCorner[4];
+  double origin[3] = {0.,0.,0.};
+  
+  // Use image center to scale dose
+  {
+  int *dims = tempImage->GetDimensions();
   dimsH[0] = dims[0] - 1;
   dimsH[1] = dims[1] - 1;
   dimsH[2] = dims[2] - 1;
   dimsH[3] = 0.;
+  }
+  
+  // Use center of mass to scale dose
+  {
+  int centerOfMass[3] = {0,0,0};
+  this->GetVolumeNodeCenterOfMass(inputDoseVolumeNode, centerOfMass);
   dimsH[0] = centerOfMass[0];
   dimsH[1] = centerOfMass[1];
   dimsH[2] = centerOfMass[2];
   dimsH[3] = 0.;
+  }
 
   vtkSmartPointer<vtkMatrix4x4> ijkToRAS = vtkSmartPointer<vtkMatrix4x4>::New();
   inputDoseVolumeNode->GetIJKToRASMatrix(ijkToRAS);
-  double rasCorner[4];
   ijkToRAS->MultiplyPoint(dimsH, rasCorner);
 
-  double origin[3] = {0.,0.,0.};
+  // Use image center to scale dose
+  {
   origin[0] = -0.5 * rasCorner[0];
   origin[1] = -0.5 * rasCorner[1];
   origin[2] = -0.5 * rasCorner[2];
+  }
 
+  // Use center of mass to scale dose
+  {
   origin[0] = - rasCorner[0];
   origin[1] = - rasCorner[1];
   origin[2] = - rasCorner[2];
+  }
 
   vtkSmartPointer<vtkMRMLScalarVolumeNode> tempDoseVolumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
   tempDoseVolumeNode->Copy(inputDoseVolumeNode);
   tempDoseVolumeNode->SetOrigin(origin);
-
-  //vtkSmartPointer<vtkGeneralTransform> volumeNodeToWorldTransform = vtkSmartPointer<vtkGeneralTransform>::New();
-  //volumeNodeToWorldTransform->Identity();
-  //vtkSmartPointer<vtkMRMLTransformNode> volumeNodeTransformNode = inputDoseVolumeNode->GetParentTransformNode();
-  //if (volumeNodeTransformNode!=NULL)
-  //{
-  //  //volumeNodeTransformNode->GetTransformToWorld(volumeNodeToWorldTransform);    
-  //  //volumeNodeToWorldTransform->Inverse();
-  //}
 
   vtkSmartPointer<vtkMatrix4x4> inputIJK2RASMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   tempDoseVolumeNode->GetIJKToRASMatrix(inputIJK2RASMatrix);
@@ -357,31 +361,24 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   reslice->SetInputData(inputDoseVolumeNode->GetImageData());
 #endif
   reslice->SetOutputOrigin(0, 0, 0);
-  //reslice->SetOutputSpacing(1, 1, 1);
-  //reslice->SetOutputExtent(0, dimensions[0]-1, 0, dimensions[1]-1, 0, dimensions[2]-1);
-  reslice->SetOutputSpacing(0.2/spacingX, 0.2/spacingY, 0.2/spacingZ);
-  reslice->SetOutputExtent(0, dimensions[0]*spacingX/0.2-1, 0, dimensions[1]*spacingY/0.2-1, 0, dimensions[2]*spacingZ/0.2-1);
+  if (op == SLICERRT_EXPAND_BY_SCALING) 
+  {
+    reslice->SetOutputSpacing(1, 1, 1);
+    reslice->SetOutputExtent(0, dimensions[0]-1, 0, dimensions[1]-1, 0, dimensions[2]-1);
+  }
+  if (op == SLICERRT_EXPAND_BY_DILATION) 
+  {
+    reslice->SetOutputSpacing(0.2/spacingX, 0.2/spacingY, 0.2/spacingZ);
+    reslice->SetOutputExtent(0, dimensions[0]*spacingX/0.2-1, 0, dimensions[1]*spacingY/0.2-1, 0, dimensions[2]*spacingZ/0.2-1);
+  }
   reslice->SetResliceTransform(outputResliceTransform);
   reslice->SetInterpolationModeToCubic();
   reslice->Update();
   tempImage = reslice->GetOutput();
 
-  // to do .... 
-  outputDoseVolumeNode->CopyOrientation( referenceDoseVolumeNode );
-  outputDoseVolumeNode->SetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str(), inputDoseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str()));
-  outputDoseVolumeNode->SetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_VALUE_ATTRIBUTE_NAME.c_str(), inputDoseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_VALUE_ATTRIBUTE_NAME.c_str()));
-
   vtkSmartPointer<vtkImageData> tempImageData = NULL;
   vtkSmartPointer<vtkImageContinuousDilate3D> dilateFilter = vtkSmartPointer<vtkImageContinuousDilate3D>::New();
 
-  // temp work around for calculating the kernel size
-  
-  //double spacing[3] = {0,0,0};
-  //volumeNode->GetSpacing(spacing);
-  int kernelSize[3] = {1,1,1};
-  kernelSize[0] = (int)(this->GetDoseMorphologyNode()->GetXSize()*2*spacingX/0.2+1);
-  kernelSize[1] = (int)(this->GetDoseMorphologyNode()->GetYSize()*2*spacingY/0.2+1);
-  kernelSize[2] = (int)(this->GetDoseMorphologyNode()->GetZSize()*2*spacingZ/0.2+1);
   //int op = this->DoseMorphologyNode->GetOperation();
   switch (op) 
   {
@@ -392,9 +389,17 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
       //resliceFilter->SetInput(tempImage2);
       //resliceFilter->SetInformationInput(tempImage);
       //resliceFilter->SetResliceTransform(transform);
-      tempImageData = tempImage; //resliceFilter->GetOutput();
+      //resliceFilter->GetOutput();
+      tempImageData = tempImage;
       break;
     case SLICERRT_EXPAND_BY_DILATION:
+      // temp work around for calculating the kernel size
+      //double spacing[3] = {0,0,0};
+      //volumeNode->GetSpacing(spacing);
+      int kernelSize[3] = {1,1,1};
+      kernelSize[0] = (int)(this->GetDoseMorphologyNode()->GetXSize()*2*spacingX/0.2+1);
+      kernelSize[1] = (int)(this->GetDoseMorphologyNode()->GetYSize()*2*spacingY/0.2+1);
+      kernelSize[2] = (int)(this->GetDoseMorphologyNode()->GetZSize()*2*spacingZ/0.2+1);
 #if (VTK_MAJOR_VERSION <= 5)
       dilateFilter->SetInput(tempImage);
 #else
@@ -418,6 +423,11 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
       tempImageData = reslice2->GetOutput();
       break;
   }
+
+  // to do .... 
+  outputDoseVolumeNode->CopyOrientation( referenceDoseVolumeNode );
+  outputDoseVolumeNode->SetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str(), inputDoseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str()));
+  outputDoseVolumeNode->SetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_VALUE_ATTRIBUTE_NAME.c_str(), inputDoseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_VALUE_ATTRIBUTE_NAME.c_str()));
 
   outputDoseVolumeNode->SetAndObserveImageData( tempImageData );
   outputDoseVolumeNode->SetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_VOLUME_IDENTIFIER_ATTRIBUTE_NAME.c_str(), "1");
