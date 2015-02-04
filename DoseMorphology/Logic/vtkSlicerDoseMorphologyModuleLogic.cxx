@@ -65,6 +65,7 @@
 #include <cassert>
 
 #define THRESHOLD 0.001
+#define RESAMPLE_SIZE_DILATION 0.5
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerDoseMorphologyModuleLogic);
@@ -368,8 +369,8 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
   }
   if (op == SLICERRT_EXPAND_BY_DILATION) 
   {
-    reslice->SetOutputSpacing(0.2/spacingX, 0.2/spacingY, 0.2/spacingZ);
-    reslice->SetOutputExtent(0, dimensions[0]*spacingX/0.2-1, 0, dimensions[1]*spacingY/0.2-1, 0, dimensions[2]*spacingZ/0.2-1);
+    reslice->SetOutputSpacing(RESAMPLE_SIZE_DILATION/spacingX, RESAMPLE_SIZE_DILATION/spacingY, RESAMPLE_SIZE_DILATION/spacingZ);
+    reslice->SetOutputExtent(0, dimensions[0]*spacingX/RESAMPLE_SIZE_DILATION-1, 0, dimensions[1]*spacingY/RESAMPLE_SIZE_DILATION-1, 0, dimensions[2]*spacingZ/RESAMPLE_SIZE_DILATION-1);
   }
   reslice->SetResliceTransform(outputResliceTransform);
   reslice->SetInterpolationModeToCubic();
@@ -397,9 +398,9 @@ int vtkSlicerDoseMorphologyModuleLogic::MorphDose()
       //double spacing[3] = {0,0,0};
       //volumeNode->GetSpacing(spacing);
       int kernelSize[3] = {1,1,1};
-      kernelSize[0] = (int)(this->GetDoseMorphologyNode()->GetXSize()*2*spacingX/0.2+1);
-      kernelSize[1] = (int)(this->GetDoseMorphologyNode()->GetYSize()*2*spacingY/0.2+1);
-      kernelSize[2] = (int)(this->GetDoseMorphologyNode()->GetZSize()*2*spacingZ/0.2+1);
+      kernelSize[0] = (int)(this->GetDoseMorphologyNode()->GetXSize()*2*spacingX/RESAMPLE_SIZE_DILATION+1);
+      kernelSize[1] = (int)(this->GetDoseMorphologyNode()->GetYSize()*2*spacingY/RESAMPLE_SIZE_DILATION+1);
+      kernelSize[2] = (int)(this->GetDoseMorphologyNode()->GetZSize()*2*spacingZ/RESAMPLE_SIZE_DILATION+1);
 #if (VTK_MAJOR_VERSION <= 5)
       dilateFilter->SetInput(tempImage);
 #else
