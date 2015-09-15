@@ -330,7 +330,7 @@ class SyntheticRTDoseLogic:
     
     """
     changeInfo = vtk.vtkImageChangeInformation()
-    changeInfo.SetInput(imageSource.GetOutput())
+    changeInfo.SetInputData(imageSource.GetOutput())
     changeInfo.SetOutputOrigin(refImageData.GetOrigin())
     changeInfo.SetOutputSpacing(refImageData.GetSpacing())
     changeInfo.Update()
@@ -346,21 +346,21 @@ class SyntheticRTDoseLogic:
 
     # Apply the stencil to the volume
     stencilToImage=vtk.vtkImageStencil()
-    stencilToImage.SetInput(imageSource.GetOutput())
+    stencilToImage.SetInputData(imageSource.GetOutput())
     stencilToImage.SetStencil(functionToStencil.GetOutput())
     stencilToImage.ReverseStencilOn()
     stencilToImage.SetBackgroundValue(value)
     stencilToImage.Update()
     
     smooth = vtk.vtkImageGaussianSmooth()
-    smooth.SetInput(stencilToImage.GetOutput())
+    smooth.SetInputData(stencilToImage.GetOutput())
     smooth.SetStandardDeviations(2.8,2.8,2.8) # place to change gradient size.
     smooth.SetRadiusFactors(3,3,3)
     smooth.SetDimensionality(3)
     smooth.Update()
     """
     resample = vtk.vtkImageReslice()
-    resample.SetInput(smooth.GetOutput())
+    resample.SetInputData(smooth.GetOutput())
     resample.SetOutputOrigin(refImageData.GetOrigin())
     resample.SetOutputSpacing(refImageData.GetSpacing()[0]/2, refImageData.GetSpacing()[1]/2, refImageData.GetSpacing()[2]/2 )
     resample.SetOutputExtent(extent[0], (extent[1]-extent[0])*2-1, 
@@ -370,7 +370,7 @@ class SyntheticRTDoseLogic:
     resample.Update()
     
     changeInfo2 = vtk.vtkImageChangeInformation()
-    changeInfo2.SetInput(resample.GetOutput())
+    changeInfo2.SetInputData(resample.GetOutput())
     changeInfo2.SetOutputOrigin(refImageData.GetOrigin())
     changeInfo2.SetOutputSpacing(refImageData.GetSpacing())
     changeInfo2.Update()
@@ -452,13 +452,13 @@ class SyntheticRTDoseLogic:
     imageSource.Update()
     
     imageCast = vtk.vtkImageCast()
-    imageCast.SetInput(imageSource.GetOutput())
+    imageCast.SetInputData(imageSource.GetOutput())
     imageCast.SetOutputScalarTypeToUnsignedChar()
     imageCast.Update()
     
     """
     changeInfo = vtk.vtkImageChangeInformation()
-    changeInfo.SetInput(imageCast.GetOutput())
+    changeInfo.SetInputData(imageCast.GetOutput())
     changeInfo.SetOutputOrigin(refImageData.GetOrigin())
     changeInfo.SetOutputSpacing(refImageData.GetSpacing())
     changeInfo.Update()
@@ -474,7 +474,7 @@ class SyntheticRTDoseLogic:
 
     # Apply the stencil to the volume
     stencilToImage=vtk.vtkImageStencil()
-    stencilToImage.SetInput(imageCast.GetOutput())
+    stencilToImage.SetInputData(imageCast.GetOutput())
     stencilToImage.SetStencil(functionToStencil.GetOutput())
     stencilToImage.ReverseStencilOn()
     stencilToImage.SetBackgroundValue(1)
@@ -483,7 +483,7 @@ class SyntheticRTDoseLogic:
     """
     extent = refImageData.GetWholeExtent()
     resample = vtk.vtkImageReslice()
-    resample.SetInput(stencilToImage.GetOutput())
+    resample.SetInputData(stencilToImage.GetOutput())
     resample.SetOutputOrigin(refImageData.GetOrigin())
     resample.SetOutputSpacing(refImageData.GetSpacing()[0]/2, refImageData.GetSpacing()[1]/2, refImageData.GetSpacing()[2]/2 )
     resample.SetOutputExtent(extent[0], (extent[1]-extent[0])*2-1, 
@@ -493,7 +493,7 @@ class SyntheticRTDoseLogic:
     resample.Update()
     
     changeInfo2 = vtk.vtkImageChangeInformation()
-    changeInfo2.SetInput(resample.GetOutput())
+    changeInfo2.SetInputData(resample.GetOutput())
     changeInfo2.SetOutputOrigin(refImageData.GetOrigin())
     changeInfo2.SetOutputSpacing(refImageData.GetSpacing())
     changeInfo2.Update()

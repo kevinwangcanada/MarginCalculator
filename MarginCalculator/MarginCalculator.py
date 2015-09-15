@@ -452,7 +452,12 @@ class MarginCalculatorLogic:
             doseGrowSizeX = (k/10.0 + radiusX)/radiusX
             doseGrowSizeY = (k/10.0 + radiusY)/radiusY
             doseGrowSizeZ = (k/10.0 + radiusZ)/radiusZ
-          # print systemError, randomError, doseGrowSize
+          # print systemError, randomError, doseGrowSizeX, doseGrowSizeY, doseGrowSizeZ
+          # the following code is to fix the random number generator crush using std::tr1 lib for not allowing 0 sigma.
+          if abs(systemError) < 0.0001:
+            systemError = 0.0001
+          if abs(randomError) < 0.0001:
+            randomError = 0.0001
           D95 = self.computeDPH(inputDoseVolumeNode, referenceDoseVolumeNode, inputContourNode, numberOfSimulations, numberOfFractions, systemError, randomError, doseGrowSizeX, doseGrowSizeY, doseGrowSizeZ, doseGrowOption)
           #print "D95", D95
           if D95old < 0.90 and D95 >= 0.90 :
