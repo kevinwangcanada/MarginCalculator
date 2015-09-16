@@ -69,7 +69,7 @@
 #ifdef WIN32
 #include <random>
 #else
-#include <tr1/random>
+#include <random>
 #endif
 #include <cmath>
 #include <time.h>
@@ -386,7 +386,6 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   double xRdmSD = this->MotionSimulatorNode->GetXRdmSD();
   double yRdmSD = this->MotionSimulatorNode->GetYRdmSD();
   double zRdmSD = this->MotionSimulatorNode->GetZRdmSD();
-  vtkDebugMacro("it is " << xSysWeight << " " << ySysWeight << " " << zSysWeight << " " << this->MotionSimulatorNode->GetSystematicErrorSD());
 
 #ifdef WIN32
   std::tr1::mt19937 eng;  

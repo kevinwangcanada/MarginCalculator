@@ -347,7 +347,7 @@ class SyntheticRTDoseLogic:
     # Apply the stencil to the volume
     stencilToImage=vtk.vtkImageStencil()
     stencilToImage.SetInputData(imageSource.GetOutput())
-    stencilToImage.SetStencil(functionToStencil.GetOutput())
+    stencilToImage.SetStencilData(functionToStencil.GetOutput())
     stencilToImage.ReverseStencilOn()
     stencilToImage.SetBackgroundValue(value)
     stencilToImage.Update()
@@ -475,7 +475,7 @@ class SyntheticRTDoseLogic:
     # Apply the stencil to the volume
     stencilToImage=vtk.vtkImageStencil()
     stencilToImage.SetInputData(imageCast.GetOutput())
-    stencilToImage.SetStencil(functionToStencil.GetOutput())
+    stencilToImage.SetStencilData(functionToStencil.GetOutput())
     stencilToImage.ReverseStencilOn()
     stencilToImage.SetBackgroundValue(1)
     stencilToImage.Update()

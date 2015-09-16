@@ -108,7 +108,7 @@ void qSlicerMotionSimulatorDoubleArrayModule::setup()
   ioManager->registerIO(new qSlicerMotionSimulatorDoubleArrayIO(doubleArraysLogic,this));
   ioManager->registerIO(new qSlicerNodeWriter(
     "Double Array List", QString("MotionSimulatorDoubleArrayFile"),
-    QStringList() << "vtkMRMLMotionSimulatorDoubleArrayNode", this));
+    QStringList() << "vtkMRMLMotionSimulatorDoubleArrayNode", true, this));
 }
 
 //-----------------------------------------------------------------------------
