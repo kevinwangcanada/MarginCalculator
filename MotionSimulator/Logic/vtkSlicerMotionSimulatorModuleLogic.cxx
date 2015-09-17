@@ -66,11 +66,7 @@
 
 // STD includes
 #include <cassert>
-#ifdef WIN32
 #include <random>
-#else
-#include <random>
-#endif
 #include <cmath>
 #include <time.h>
 
