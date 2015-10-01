@@ -63,10 +63,10 @@
 #include <vtkImageMathematics.h>
 #include <vtkDoubleArray.h>
 #include <vtkObjectFactory.h>
+#include <vtkBoxMuellerRandomSequence.h>
 
 // STD includes
 #include <cassert>
-#include <random>
 #include <cmath>
 #include <time.h>
 
@@ -383,38 +383,32 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   double yRdmSD = this->MotionSimulatorNode->GetYRdmSD();
   double zRdmSD = this->MotionSimulatorNode->GetZRdmSD();
 
-#ifdef WIN32
-  std::tr1::mt19937 eng;  
-  eng.seed(time(NULL));
-
-  std::tr1::normal_distribution<double> Xdistribution(0.0, xSysSD);
-  std::tr1::normal_distribution<double> Ydistribution(0.0, ySysSD);
-  std::tr1::normal_distribution<double> Zdistribution(0.0, zSysSD);
-  std::tr1::normal_distribution<double> Xdistribution2(0.0, xRdmSD);
-  std::tr1::normal_distribution<double> Ydistribution2(0.0, yRdmSD);
-  std::tr1::normal_distribution<double> Zdistribution2(0.0, zRdmSD);
-#else
-  std::default_random_engine eng;
-
-  std::normal_distribution<double> Xdistribution(0.0, xSysSD);
-  std::normal_distribution<double> Ydistribution(0.0, ySysSD);
-  std::normal_distribution<double> Zdistribution(0.0, zSysSD);
-  std::normal_distribution<double> Xdistribution2(0.0, xRdmSD);
-  std::normal_distribution<double> Ydistribution2(0.0, yRdmSD);
-  std::normal_distribution<double> Zdistribution2(0.0, zRdmSD);
-#endif
+  vtkSmartPointer<vtkBoxMuellerRandomSequence> Xdistribution = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+  vtkSmartPointer<vtkBoxMuellerRandomSequence> Ydistribution = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+  vtkSmartPointer<vtkBoxMuellerRandomSequence> Zdistribution = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+  vtkSmartPointer<vtkBoxMuellerRandomSequence> Xdistribution2 = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+  vtkSmartPointer<vtkBoxMuellerRandomSequence> Ydistribution2 = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
+  vtkSmartPointer<vtkBoxMuellerRandomSequence> Zdistribution2 = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
 
   for (int i = 0; i<this->MotionSimulatorNode->GetNumberOfSimulation(); i++)
   { 
     vtkSmartPointer<vtkImageData> baseImageData = NULL;
     
     // Generate systematic error for all fractions, it stays the same over all fractions
-    double xSys = Xdistribution(eng);
-    double ySys = Ydistribution(eng);
-    double zSys = Zdistribution(eng);
-    double x = xSys + Xdistribution2(eng);
-    double y = ySys + Ydistribution2(eng);
-    double z = zSys + Zdistribution2(eng);
+    double xSys = Xdistribution->GetScaledValue(0.0, xSysSD);
+    double ySys = Ydistribution->GetScaledValue(0.0, ySysSD);
+    double zSys = Zdistribution->GetScaledValue(0.0, zSysSD);
+    Xdistribution->Next();
+    Ydistribution->Next();
+    Zdistribution->Next();
+
+    double x = xSys + Xdistribution2->GetScaledValue(0.0, xRdmSD);
+    double y = ySys + Ydistribution2->GetScaledValue(0.0, yRdmSD);
+    double z = zSys + Zdistribution2->GetScaledValue(0.0, zRdmSD);
+    Xdistribution2->Next();
+    Ydistribution2->Next();
+    Zdistribution2->Next();
+
     x = x < MOTION_MAX ? x : MOTION_MAX;
     y = y < MOTION_MAX ? y : MOTION_MAX;
     z = z < MOTION_MAX ? z : MOTION_MAX;
@@ -441,9 +435,13 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
     {
       for (int j = 1; j<this->MotionSimulatorNode->GetNumberOfFraction(); j++)
       { // Generate new random error for each new fraction
-        double x = xSys + Xdistribution2(eng);
-        double y = ySys + Ydistribution2(eng);
-        double z = zSys + Zdistribution2(eng);
+        double x = xSys + Xdistribution2->GetScaledValue(0.0, xRdmSD);
+        double y = ySys + Ydistribution2->GetScaledValue(0.0, yRdmSD);
+        double z = zSys + Zdistribution2->GetScaledValue(0.0, zRdmSD);
+        Xdistribution2->Next();
+        Ydistribution2->Next();
+        Zdistribution2->Next();
+
         x = x < MOTION_MAX ? x : MOTION_MAX;
         y = y < MOTION_MAX ? y : MOTION_MAX;
         z = z < MOTION_MAX ? z : MOTION_MAX;
