@@ -7,17 +7,17 @@ set(EXTENSION_NAME MarginCalculator)
 
 # ------------------------------------------------------------------------
 set(MARGINCALCULATOR_VERSION_MAJOR "0")
-set(MARGINCALCULATOR_VERSION_MINOR "2")
+set(MARGINCALCULATOR_VERSION_MINOR “5”)
 set(MARGINCALCULATOR_VERSION_PATCH "0")
 set(MARGINCALCULATOR_VERSION ${MARGINCALCULATOR_VERSION_MAJOR}.${MARGINCALCULATOR_VERSION_MINOR}.${MARGINCALCULATOR_VERSION_PATCH})
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/MarginCalculator")
-set(EXTENSION_CATEGORY "MARGIN CALCULATOR")
+set(EXTENSION_CATEGORY “Radiotherapy”)
 set(EXTENSION_CONTRIBUTORS "Kevin Wang (Princess Margaret Cancer Centre)")
-set(EXTENSION_DESCRIPTION "Extensions for RT Margin Calculator version ${MARGINCALCULATOR_VERSION}")
-set(EXTENSION_ICONURL "http://wiki.slicer.org/slicerWiki/images/f/f2/MARGINCALCULATORExtensionLogo.png")
-set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/0/04/MARGINCALCULATOR0.3_Screenshot_DVH_HeadNeck_3.png http://www.slicer.org/slicerWiki/images/c/c0/MARGINCALCULATOR0.4_Screenshot_Isodose.png http://www.slicer.org/slicerWiki/images/2/20/MARGINCALCULATOR0.4_Screenshot_Gamma.png")
+set(EXTENSION_DESCRIPTION "Extension for Radiotherapy Margin Calculation. Features include synthetic dose volume generation, motion simulation for systematic and random errors, dose population histogram based on motion simulation and complete simulation module for margin calculation. version ${MARGINCALCULATOR_VERSION}")
+set(EXTENSION_ICONURL "http://slicer.org/slicerWiki/images/1/11/MarginCalculator_Logo2_128.png")
+set(EXTENSION_SCREENSHOTURLS "http://slicer.org/slicerWiki/images/5/53/MarginCalculatorScreenshot1.png")
 set(EXTENSION_STATUS "Beta")
 set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
 
