@@ -7,13 +7,13 @@ set(EXTENSION_NAME MarginCalculator)
 
 # ------------------------------------------------------------------------
 set(MARGINCALCULATOR_VERSION_MAJOR "0")
-set(MARGINCALCULATOR_VERSION_MINOR “5”)
+set(MARGINCALCULATOR_VERSION_MINOR "5")
 set(MARGINCALCULATOR_VERSION_PATCH "0")
 set(MARGINCALCULATOR_VERSION ${MARGINCALCULATOR_VERSION_MAJOR}.${MARGINCALCULATOR_VERSION_MINOR}.${MARGINCALCULATOR_VERSION_PATCH})
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/MarginCalculator")
-set(EXTENSION_CATEGORY “Radiotherapy”)
+set(EXTENSION_CATEGORY "Radiotherapy")
 set(EXTENSION_CONTRIBUTORS "Kevin Wang (Princess Margaret Cancer Centre)")
 set(EXTENSION_DESCRIPTION "Extension for Radiotherapy Margin Calculation. Features include synthetic dose volume generation, motion simulation for systematic and random errors, dose population histogram based on motion simulation and complete simulation module for margin calculation. version ${MARGINCALCULATOR_VERSION}")
 set(EXTENSION_ICONURL "http://slicer.org/slicerWiki/images/1/11/MarginCalculator_Logo2_128.png")
