@@ -460,10 +460,6 @@ void qSlicerMotionSimulatorModuleWidget::updateButtonsState()
     return;
   }
 
-  bool applyEnabled = d->logic()->GetMotionSimulatorNode()
-                   && d->logic()->GetMotionSimulatorNode()->GetInputDoseVolumeNode()
-                   && d->logic()->GetMotionSimulatorNode()->GetInputContourNode()
-                   && d->logic()->GetMotionSimulatorNode()->GetOutputDoubleArrayNode() ;
   d->pushButton_RunSimulation->setEnabled(true);
 }
 
