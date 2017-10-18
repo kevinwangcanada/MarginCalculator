@@ -302,9 +302,6 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   }
   //this->GetMRMLScene()->StartState(vtkMRMLScene::BatchProcessState); 
 
-  // Get dose grid scaling and dose units
-  const char* doseUnitName = doseVolumeNode->GetAttribute(MarginCalculatorCommon::DICOMRTIMPORT_DOSE_UNIT_NAME_ATTRIBUTE_NAME.c_str());
-
   // Get maximum dose from dose volume
   vtkNew<vtkImageAccumulate> doseStat;
 #if (VTK_MAJOR_VERSION <= 5)
@@ -352,8 +349,6 @@ int vtkSlicerMotionSimulatorModuleLogic::RunSimulation()
   //}
   //double* indexedLabelmapSpacing = indexedLabelmapNode->GetSpacing();
 
-  double* doseVolumeOrigin = doseVolumeNode->GetOrigin();
-  double* doseVolumeSpacing = doseVolumeNode->GetSpacing();
     //indexedLabelmapVolumeNode->SetSpacing(
     //  referenceSpacing[0]/this->RasterizationOversamplingFactor,
     //  referenceSpacing[1]/this->RasterizationOversamplingFactor,

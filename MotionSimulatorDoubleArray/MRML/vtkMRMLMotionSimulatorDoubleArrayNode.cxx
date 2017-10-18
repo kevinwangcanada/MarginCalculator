@@ -72,14 +72,14 @@ void vtkMRMLMotionSimulatorDoubleArrayNode::WriteXML(ostream& of, int nIndent)
     double xy[4];
     for (int i = 0; i < n; i ++)
       {
-      this->Array->GetTupleValue(i, xy);
+      this->Array->GetTypedTuple(i, xy);
       ssX    << xy[0] << ", ";
       ssY    << xy[1] << ", ";
       ssZ    << xy[2] << ", ";
       ssValue << xy[3] << ", ";
       ssValue2 << xy[4] << ", ";
       }
-    this->Array->GetTupleValue(n, xy);
+    this->Array->GetTypedTuple(n, xy);
     // put the last values
     ssX    << xy[0];
     ssY    << xy[1];
@@ -211,7 +211,7 @@ void vtkMRMLMotionSimulatorDoubleArrayNode::ReadXMLAttributes(const char** atts)
         xy[2] = valueZ[i];
         xy[3] = valueValue[i];
         xy[4] = valueValue2[i];
-        this->Array->SetTupleValue(i, xy);
+        this->Array->SetTypedTuple(i, xy);
         }
       }
     }
@@ -228,7 +228,7 @@ void vtkMRMLMotionSimulatorDoubleArrayNode::ReadXMLAttributes(const char** atts)
         xy[0] = valueX[i];
         xy[1] = valueY[i];
         xy[2] = 0.0;
-        this->Array->SetTupleValue(i, xy);
+        this->Array->SetTypedTuple(i, xy);
         }
       }
     }
@@ -319,7 +319,7 @@ int vtkMRMLMotionSimulatorDoubleArrayNode::GetXYZValue(int index, double* x, dou
 
   if (this->Array->GetNumberOfComponents() >= 3 && index < this->Array->GetNumberOfTuples())
     {
-    this->Array->GetTupleValue(index, xy);
+    this->Array->GetTypedTuple(index, xy);
     *x = xy[0];
     *y = xy[1];
     *z = xy[2];
@@ -339,7 +339,7 @@ int vtkMRMLMotionSimulatorDoubleArrayNode::GetXYZValue(int index, double* x, dou
 
   if (this->Array->GetNumberOfComponents() >= 5 && index < this->Array->GetNumberOfTuples())
     {
-    this->Array->GetTupleValue(index, xy);
+    this->Array->GetTypedTuple(index, xy);
     *x    = xy[0];
     *y    = xy[1];
     *z    = xy[2];
@@ -365,7 +365,7 @@ int vtkMRMLMotionSimulatorDoubleArrayNode::SetXYZValue(int index, double x, doub
     xy[2] = z;
     xy[3] = 0.0;
     xy[4] = 0.0;
-    this->Array->SetTupleValue(index, xy);
+    this->Array->SetTypedTuple(index, xy);
     this->Modified();
     return 1;
     }
@@ -388,7 +388,7 @@ int vtkMRMLMotionSimulatorDoubleArrayNode::SetXYZValue(int index, double x, doub
     xy[2] = z;
     xy[3] = value;
     xy[4] = value2;
-    this->Array->SetTupleValue(index, xy);
+    this->Array->SetTypedTuple(index, xy);
     this->Modified();
     return 1;
     }
@@ -479,7 +479,7 @@ void vtkMRMLMotionSimulatorDoubleArrayNode::GetRange(double* rangeX, double* ran
   if (nTuples > 0)
     {
     // Get the first values as an initial value
-    this->Array->GetTupleValue(0, xy);
+    this->Array->GetTypedTuple(0, xy);
     rangeX[0] = xy[0];
     rangeX[1] = xy[0];
     rangeY[0] = xy[1] - c * xy[2];
@@ -488,7 +488,7 @@ void vtkMRMLMotionSimulatorDoubleArrayNode::GetRange(double* rangeX, double* ran
     // Search the array
     for (int i = 1; i < nTuples; i ++)
       {
-      this->Array->GetTupleValue(i, xy);
+      this->Array->GetTypedTuple(i, xy);
 
       // X value
       if (xy[0] < rangeX[0])
@@ -537,14 +537,14 @@ void vtkMRMLMotionSimulatorDoubleArrayNode::GetXRange(double* range)
     {
 
     // Get the first values as an initial value
-    this->Array->GetTupleValue(0, xy);
+    this->Array->GetTypedTuple(0, xy);
     range[0] = xy[0];
     range[1] = xy[0];
 
     // Search the array
     for (int i = 1; i < nTuples; i ++)
       {
-      this->Array->GetTupleValue(i, xy);
+      this->Array->GetTypedTuple(i, xy);
       if (xy[0] < range[0])
         {
         range[0] = xy[0];
@@ -593,14 +593,14 @@ void vtkMRMLMotionSimulatorDoubleArrayNode::GetYRange(double* range, int fInclud
     {
 
     // Get the first values as an initial value
-    this->Array->GetTupleValue(0, xy);
+    this->Array->GetTypedTuple(0, xy);
     range[0] = xy[1] - c * xy[2];
     range[1] = xy[1] + c * xy[2];
     
     // Search the array
     for (int i = 1; i < nTuples; i ++)
       {
-      this->Array->GetTupleValue(i, xy);
+      this->Array->GetTypedTuple(i, xy);
       double low  = xy[1] - c * xy[2];
       double high = xy[1] + c * xy[2];
 
